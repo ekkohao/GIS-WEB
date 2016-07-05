@@ -1,57 +1,56 @@
 <?php
-//Êý¾Ý¿â½Ó¿Ú·â×°
+//æ•°æ®åº“æŽ¥å£å°è£…
 class db{
-	//±£´æ²éÑ¯½á¹û»ò²éÑ¯ÊÇ·ñ³É¹¦µÄ²¼¶ûÖµ
+	//ä¿å­˜æŸ¥è¯¢ç»“æžœæˆ–æŸ¥è¯¢æ˜¯å¦æˆåŠŸçš„å¸ƒå°”å€¼
 	protected $result;
-	//±£´æ²éÑ¯½á¹ûµÄÁÐµÄÁÐ£¨×Ö¶Î£©ÊôÐÔ
+	//ä¿å­˜æŸ¥è¯¢ç»“æžœçš„åˆ—çš„åˆ—ï¼ˆå­—æ®µï¼‰å±žæ€§
 	protected $col_info;
-	//±£´æÖ´ÐÐµÄ²éÑ¯Óï¾ä
+	//ä¿å­˜æ‰§è¡Œçš„æŸ¥è¯¢è¯­å¥
 	var $queries;
-	//ÉèÖÃÊý¾Ý¿âÖØÁ¬´ÎÊý
+	//è®¾ç½®æ•°æ®åº“é‡è¿žæ¬¡æ•°
 	protected $reconnect_retries = 5;
-	//Êý¾Ý¿âÇ°×º
+	//æ•°æ®åº“å‰ç¼€
 	var $prefix = '';
-	//Êý¾Ý¿âÁ¬½Ó¾ä±ú
-	protected $dbh;
-	//ÊÇ·ñÊý¾Ý¿âÒÑÁ¬½Ó
+	//æ•°æ®åº“è¿žæŽ¥å¥æŸ„
+	protected $dbcon;
+	//æ˜¯å¦æ•°æ®åº“å·²è¿žæŽ¥
 	protected $has_connected=false;
 	protected $ready=false;
 	private $is_use_mysqli=false;
-	//¹¹Ôìº¯Êý
+	//æž„é€ å‡½æ•°
 	public function __construct() {
 		register_shutdown_function( array( $this, '__destruct' ) );
-		//Èô´æÔÚmysqliÄ£¿éÔòÆôÓÃ
+		//è‹¥å­˜åœ¨mysqliæ¨¡å—åˆ™å¯ç”¨
 		if ( function_exists( 'mysqli_connect' ) ) 
 			$this->is_use_mysqli = true;
-		// wp-config.php creation will manually connect when ready.
 		if ( defined( 'WP_SETUP_CONFIG' ) ) {
 			return;
 		}
 		$this->db_connect();
 	}
-	//Îö¹¹º¯Êý
+	//æžæž„å‡½æ•°
 	public function __destruct() {
 		return true;
 	}
-	/** ·â×°get **/
+	/** å°è£…get **/
 	public function __get( $name ) {
 		if ( 'col_info' === $name )
 			$this->load_col_info();
 		return $this->$name;
 	}
-	/** ·â×°set **/
+	/** å°è£…set **/
 	public function __set( $name, $value ) {
 		$this->$name = $value;
 	}
-	/** ·â×°isset **/
+	/** å°è£…isset **/
 	public function __isset( $name ) {
 		return isset( $this->$name );
 	}
-	/** ·â×°unset **/
+	/** å°è£…unset **/
 	public function __unset( $name ) {
 		unset( $this->$name );
 	}
-	//Á¬½ÓÊý¾Ý¿â
+	//è¿žæŽ¥æ•°æ®åº“
 	public function db_connect() {
 		/*
 		 * Deprecated in 3.9+ when using MySQLi. No equivalent
@@ -60,7 +59,7 @@ class db{
 		$new_link = defined( 'MYSQL_NEW_LINK' ) ? MYSQL_NEW_LINK : true;
 		$client_flags = defined( 'MYSQL_CLIENT_FLAGS' ) ? MYSQL_CLIENT_FLAGS : 0;
 		if ( $this->is_use_mysqli ) {
-			$this->dbh = mysqli_init();
+			$this->dbcon = mysqli_init();
 			// mysqli_real_connect doesn't support the host param including a port or socket
 			// like mysql_connect does. This duplicates how mysql_connect detects a port and/or socket file.
 			$port = null;
@@ -81,12 +80,12 @@ class db{
 				}
 			}
 			if ( H_DEBUG ) {
-				mysqli_real_connect( $this->dbh, $host, DB_USER, DB_PASSWORD, null, $port, $socket, $client_flags );
+				mysqli_real_connect( $this->dbcon, $host, DB_USER, DB_PASSWORD, null, $port, $socket, $client_flags );
 			} else {
-				@mysqli_real_connect( $this->dbh, $host, DB_USER, DB_PASSWORD, null, $port, $socket, $client_flags );
+				@mysqli_real_connect( $this->dbcon, $host, DB_USER, DB_PASSWORD, null, $port, $socket, $client_flags );
 			}
-			if ( $this->dbh->connect_errno ) {
-				$this->dbh = null;
+			if ( $this->dbcon->connect_errno ) {
+				$this->dbcon = null;
 				/* It's possible ext/mysqli is misconfigured. Fall back to ext/mysql if:
 		 		 *  - We haven't previously connected, and
 		 		 *  - WP_USE_EXT_MYSQL isn't set to false, and
@@ -105,36 +104,41 @@ class db{
 			}
 		} else {
 			if ( H_DEBUG ) {
-				$this->dbh = mysql_connect( DB_HOST, DB_USER, DB_PASSWORD, $new_link, $client_flags );
+				$this->dbcon = mysql_connect( DB_HOST, DB_USER, DB_PASSWORD, $new_link, $client_flags );
 			} else {
-				$this->dbh = @mysql_connect( DB_HOST, DB_USER, DB_PASSWORD, $new_link, $client_flags );
+				$this->dbcon = @mysql_connect( DB_HOST, DB_USER, DB_PASSWORD, $new_link, $client_flags );
 			}
 		}
-		if ( ! $this->dbh  ) {
-			//Î´Íê³É
-			die("Êý¾Ý¿âÁ¬½ÓÊ§°Ü");
+		if ( ! $this->dbcon  ) {
+			//æœªå®Œæˆ
+			die("æ•°æ®åº“è¿žæŽ¥å¤±è´¥");
 			return false;
 		} else {
 			$this->has_connected = true;
-			$this->set_charset( $this->dbh );
+			$this->set_charset( $this->dbcon );
 			//$this->set_sql_mode();
 			$this->ready = true;
-			$this->select( DB_NAME, $this->dbh );
+			$this->select( DB_NAME, $this->dbcon );
 			return true;
 		}
 		return false;
 	}
-	//ÉèÖÃÊý¾Ý¿â±àÂë
+	//public function db_close(){
+	//	if($this->is_use_mysqli)
+	//		mysqli_close($this->dbcon);
+	//	else
+	//		mysql_close($this->dbcon);
+	//}
+	//è®¾ç½®æ•°æ®åº“ç¼–ç 
 	public function set_charset( $dbh, $charset = null) {
 		if ( ! isset( $charset ) )
 			$charset = DB_CHARSET;
-		if ( $this->is_use_mysqli&&function_exists( 'mysqli_set_charset' )) {
+		if ( $this->is_use_mysqli)
 			mysqli_set_charset( $dbh, $charset );		
-		} elseif ( !$this->is_use_mysqli&&function_exists( 'mysql_set_charset' )) {
+ 		else 
 			mysql_set_charset( $charset, $dbh );	
-		}
 	}
-	/** Ñ¡ÔñÊý¾Ý¿â **/
+	/** é€‰æ‹©æ•°æ®åº“ **/
 	public function select( $db, $dbh = null ) {
 		if ( is_null($dbh) )
 			$dbh = $this->dbh;
@@ -145,14 +149,14 @@ class db{
 		}
 		if ( ! $success ) {
 			$this->ready = false;
-			//Î´Íê³É
-			die("Êý¾Ý¿âÑ¡ÔñÊ§°Ü");
+			//æœªå®Œæˆ
+			die("æ•°æ®åº“é€‰æ‹©å¤±è´¥");
 			return;
 		}
 	}
 	/**
-	 *»ñÈ¡µ±Ç°²éÑ¯½á¹û¼¯ÖÐËùÓÐÁÐ£¨×Ö¶Î£©µÄ¶ÔÏóÊý×é£¬
-	 *Ã¿¸ö¶ÔÏó°üº¬ÁË×Ö¶ÎÃûname¡¢±íÃûtable¡¢×Ö¶Î×î´ó³¤¶Èmax_length......µÈµÈ
+	 *èŽ·å–å½“å‰æŸ¥è¯¢ç»“æžœé›†ä¸­æ‰€æœ‰åˆ—ï¼ˆå­—æ®µï¼‰çš„å¯¹è±¡æ•°ç»„ï¼Œ
+	 *æ¯ä¸ªå¯¹è±¡åŒ…å«äº†å­—æ®µånameã€æ‰€å±žè¡¨åtableã€å­—æ®µæœ€å¤§é•¿åº¦max_length......ç­‰ç­‰
 	 **/
 	protected function load_col_info() {
 		if ( $this->col_info )
@@ -167,7 +171,7 @@ class db{
 			}
 		}
 	}
-	/** ·µ»Ø½á¹û¼¯ÖÐµÄÄ³¸ö½á¹ûÁÐ£¨×Ö¶Î£©µÄÄ³¸öÊôÐÔÖµ»òËùÓÐÁÐ£¨µ±$col_offset==-1Ê±£©µÄÄ³¸öÊôÐÔÖµÊý×é**/
+	/** è¿”å›žç»“æžœé›†ä¸­çš„æŸä¸ªç»“æžœåˆ—ï¼ˆå­—æ®µï¼‰çš„æŸä¸ªå±žæ€§å€¼æˆ–æ‰€æœ‰åˆ—ï¼ˆå½“$col_offset==-1æ—¶ï¼‰çš„æŸä¸ªå±žæ€§å€¼æ•°ç»„**/
 	public function get_col_info( $info_type = 'name', $col_offset = -1 ) {
 		$this->load_col_info();
 		if ( $this->col_info ) {
@@ -183,6 +187,74 @@ class db{
 				return $this->col_info[$col_offset]->{$info_type};
 			}
 		}
+	}
+	protected function load_dev_info($dev_number){
+		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`lines`.line_name FROM devs,groups,`lines` WHERE devs.dev_number='" . $dev_number . "' AND devs.group_id=groups.group_id AND devs.line_id=`lines`.line_id";
+		if($this->is_use_mysqli)
+			$this->result=mysqli_query($this->dbcon,$query);
+		else
+			$this->result=mysql_query($query,$this->dbcon);
+	}
+	public function get_dev_info($dev_number=null){
+		if($dev_number==null)
+			die("æ²¡æœ‰èŽ·å–åˆ°è®¾å¤‡ç¼–å·");
+		$this->load_dev_info($dev_number);
+		
+		if($this->is_use_mysqli)
+			$row=mysqli_fetch_array($this->result);
+		else
+			$row=mysql_fetch_array($this->result);
+		return $row;
+	} 
+	public function add_dev($dev_number,$dev_name,$dev_phase,$group_name,$group_loc,$line_name ){
+		$group_id=$this->get_group_id($group_name,$group_loc);
+		$line_id=$this->get_line_id($line_name);
+		$query="INSERT INTO devs(dev_number,dev_name,dev_phase,group_id,line_id) VALUES('" . $dev_number."','".$dev_name."','".$dev_phase."',".$group_id.",".$line_id . ")";
+		if($this->is_use_mysqli)
+			$result=mysqli_query($this->dbcon,$query);
+		else 
+			$result=mysql_query($query,$this->dbcon);
+		if(!$result)
+			die("æ·»åŠ è®¾å¤‡å¤±è´¥");
+	}
+	public function add_group($group_name,$group_loc,$line_name,$line_name2=null){
+		$line_id=$this->get_line_id($line_name);
+		if($line_name2){
+			$line_id2=$this->get_line_id($line_name2);
+			$query="INSERT INTO groups(group_name,group_loc,line_id,line_id2) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.")";
+		}else 	
+			$query="INSERT INTO groups(group_name,group_loc,line_id) VALUES('".$group_name."','".$group_loc."',".$line_id.")";
+		if($this->is_use_mysqli)
+			$result=mysqli_query($this->dbcon,$query);
+		else 
+			$result=mysql_query($query,$this->dbcon);
+		if(!$result)
+			die("æ·»åŠ æ†å¡”å¤±è´¥");
+	}
+	public function add_line($line_name){
+		$query="INSERT INTO `lines`(`line_name`) VALUES ('".$line_name."')";
+		if($this->is_use_mysqli)
+			$result=mysqli_query($this->dbcon,$query);
+		else 
+			$result=mysql_query($query,$this->dbcon);
+		if(!$result)
+			die("æ·»åŠ çº¿è·¯å¤±è´¥");
+	}
+	protected function get_group_id($group_name,$group_loc){
+		$query="SELECT group_id FROM groups WHERE group_name='" . $group_name . "' AND group_loc='" . $group_loc ."'";
+		if($this->is_use_mysqli)
+			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
+		else
+			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
+		return $row['group_id'];
+	}
+	protected function get_line_id($line_name){
+		$query="SELECT `line_id` FROM `lines` WHERE `line_name`='" . $line_name . "'";
+		if($this->is_use_mysqli)
+			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
+		else
+			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
+		return $row['line_id'];
 	}
 }
 ?>

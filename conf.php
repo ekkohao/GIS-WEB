@@ -1,18 +1,18 @@
 <?php
-/** WordPressÊý¾Ý¿âµÄÃû³Æ */
-define('DB_NAME', 'keding_gis');
-/** MySQLÊý¾Ý¿âÓÃ»§Ãû */
+/** WordPressæ•°æ®åº“çš„åç§° */
+define('DB_NAME', 'hfkeding_gis');
+/** MySQLæ•°æ®åº“ç”¨æˆ·å */
 define('DB_USER', 'hfkeding');
-/** MySQLÊý¾Ý¿âÃÜÂë */
+/** MySQLæ•°æ®åº“å¯†ç  */
 define('DB_PASSWORD', 'hfkeding1994');
-/** MySQLÖ÷»ú */
+/** MySQLä¸»æœº */
 define('DB_HOST', 'localhost');
-/** ´´½¨Êý¾Ý±íÊ±Ä¬ÈÏµÄÎÄ×Ö±àÂë */
+/** åˆ›å»ºæ•°æ®è¡¨æ—¶é»˜è®¤çš„æ–‡å­—ç¼–ç  */
 define('DB_CHARSET', 'utf8');
-/** Êý¾Ý¿âÕûÀíÀàÐÍ¡£Èç²»È·¶¨ÇëÎð¸ü¸Ä */
+/** æ•°æ®åº“æ•´ç†ç±»åž‹ã€‚å¦‚ä¸ç¡®å®šè¯·å‹¿æ›´æ”¹ */
 //define('DB_COLLATE', '');
 define('H_DEBUG', 'false');
-/** WordPressÄ¿Â¼µÄ¾ø¶ÔÂ·¾¶¡£ */
+/** WordPressç›®å½•çš„ç»å¯¹è·¯å¾„ã€‚ */
 if ( !defined('ABSPATH') )
 	define('ABSPATH', dirname(__FILE__));
 ?>
