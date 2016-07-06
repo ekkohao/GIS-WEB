@@ -11,6 +11,8 @@ define('DB_HOST', 'rm-bp1bv2p9m6x3n8fc1.mysql.rds.aliyuncs.com');
 define('DB_CHARSET', 'utf8');
 /** 数据库整理类型。如不确定请勿更改 */
 //define('DB_COLLATE', '');
+/** 域名地址 */
+define('SITE_URL', 'http://localhost/GIS-WEB');
 define('H_DEBUG', 'false');
 /** WordPress目录的绝对路径。 */
 if ( !defined('ABSPATH') )
