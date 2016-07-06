@@ -30,6 +30,7 @@ class db{
 	}
 	//析构函数
 	public function __destruct() {
+		$this->db_close();
 		return true;
 	}
 	/** 封装get **/
@@ -97,7 +98,7 @@ class db{
 				} else if ( ! function_exists( 'mysql_connect' ) ) {
 					$attempt_fallback = false;
 				}
-				if ( $attempt_fallback ) {
+				if ( $attempt_fallback) {
 					$this->is_use_mysqli = false;
 					$this->db_connect();
 				}
@@ -123,12 +124,15 @@ class db{
 		}
 		return false;
 	}
-	//public function db_close(){
-	//	if($this->is_use_mysqli)
-	//		mysqli_close($this->dbcon);
-	//	else
-	//		mysql_close($this->dbcon);
-	//}
+	public function db_close(){
+		if($this->has_connected){
+			if($this->is_use_mysqli)
+				mysqli_close($this->dbcon);
+			else
+				mysql_close($this->dbcon);
+			$this->has_connected=false;
+		}
+	}
 	//设置数据库编码
 	public function set_charset( $dbh, $charset = null) {
 		if ( ! isset( $charset ) )
@@ -189,7 +193,7 @@ class db{
 		}
 	}
 	protected function load_dev_info($dev_number){
-		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`lines`.line_name FROM devs,groups,`lines` WHERE devs.dev_number='" . $dev_number . "' AND devs.group_id=groups.group_id AND devs.line_id=`lines`.line_id";
+		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`liness`.line_name FROM devs,groups,`liness` WHERE devs.dev_number='" . $dev_number . "' AND devs.group_id=groups.group_id AND devs.line_id=`liness`.line_id";
 		if($this->is_use_mysqli)
 			$this->result=mysqli_query($this->dbcon,$query);
 		else
@@ -199,7 +203,8 @@ class db{
 		if($dev_number==null)
 			die("没有获取到设备编号");
 		$this->load_dev_info($dev_number);
-		
+		if(!$this->result)
+			return false;
 		if($this->is_use_mysqli)
 			$row=mysqli_fetch_array($this->result);
 		else
@@ -218,6 +223,8 @@ class db{
 			die("添加设备失败");
 	}
 	public function add_group($group_name,$group_loc,$line_name,$line_name2=null){
+		if($this->get_group_id($group_name, $group_loc))
+			die("添加失败，已有相同名字的杆塔名和杆塔地址");
 		$line_id=$this->get_line_id($line_name);
 		if($line_name2){
 			$line_id2=$this->get_line_id($line_name2);
@@ -232,7 +239,9 @@ class db{
 			die("添加杆塔失败");
 	}
 	public function add_line($line_name){
-		$query="INSERT INTO `lines`(`line_name`) VALUES ('".$line_name."')";
+		if($this->get_line_id($line_name))
+			die("添加失败，已有相同名字的线路");
+		$query="INSERT INTO `liness`(`line_name`) VALUES ('".$line_name."')";
 		if($this->is_use_mysqli)
 			$result=mysqli_query($this->dbcon,$query);
 		else 
@@ -248,13 +257,38 @@ class db{
 			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
 		return $row['group_id'];
 	}
-	protected function get_line_id($line_name){
-		$query="SELECT `line_id` FROM `lines` WHERE `line_name`='" . $line_name . "'";
+	public function get_line_id($line_name){
+		$query="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
 		if($this->is_use_mysqli)
 			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
 		else
 			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
 		return $row['line_id'];
+	}
+	public function get_user_id_vie_pwd($user_name,$passwd){
+		$passwdd=md5($passwd);
+		$query="SELECT user_id FROM users WHERE user_name='" . $user_name . "' AND passwd='" . $passwdd ."'";
+		if($this->is_use_mysqli)
+			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
+		else
+			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
+		return $row['user_id'];
+		
+	}
+	public function add_user($user_name,$passwd,$user_role=10,$register_time=null){
+		$passwdd=md5($passwd);
+		if ($this->get_user_id_vie_pwd($user_name, $passwd))
+			die("用户名已存在");
+		$last_login_time=time();
+		$register_time=$register_time?$register_time:time();
+		$query="INSERT INTO users(user_name,passwd,user_role,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."','".$user_role."','".$last_login_time."','".$register_time."')";
+		echo $query;
+		if($this->is_use_mysqli)
+			$result=mysqli_query($this->dbcon,$query);
+		else
+			$result=mysql_query($query,$this->dbcon);
+		if(!$result)
+			die("添加用户失败");
 	}
 }
 ?>

@@ -6,4 +6,16 @@ function require_db() {
 		return;
 	$mydb = new db();
 }
+function get_footer($file=null){
+	if ($file)
+		require(ABSPATH."/".$file);
+	else
+		require_once ABSPATH.'/footer.php';
+}
+function get_header($file=null){
+	if ($file)
+		require(ABSPATH."/".$file);
+	else
+		require_once ABSPATH.'/header.php';
+}
 ?>

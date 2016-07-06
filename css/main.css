@@ -1,0 +1,224 @@
+﻿@font-face{
+  font-family:'FontAwesome';
+  src:url('../font/fontawesome-webfont.eot?v=3.0.1');
+  src:url('../font/fontawesome-webfont.eot?#iefix&v=3.0.1') format('embedded-opentype'),
+  url('../font/fontawesome-webfont.woff?v=3.0.1') format('woff'),
+  url('../font/fontawesome-webfont.ttf?v=3.0.1') format('truetype');
+  font-weight:normal;
+  font-style:normal }
+body {
+    background-color: #f6f6f6;
+}
+/**
+ *hearder
+ */
+#header {
+    background: #064482;
+    background-image: linear-gradient(45deg,#064482, #430740);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2) inset, 0 -3px 7px rgba(0, 0, 0, 0.2) inset;
+    padding:30px 0px;
+    color:#ffffff;
+    margin-bottom:20px;
+}
+#header h1 {
+    color:#ffffff;
+    font-size:50px;
+    line-height:50px;
+    font-weight:400;
+    text-align:center;
+    }
+/**
+ *bodier
+ */
+ 
+ .wrap{
+ 	float:left;
+ 	width:100%;
+ 	min-height:450px;
+ 	padding-right:450px;
+ }
+ .login-bar{
+ 	float:left;
+ 	width:450px;
+ 	padding:100px 20px;
+ 	margin-left:-450px;
+ }
+ 
+.widget {
+    margin-bottom: 15px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #eaeaea;
+    overflow: hidden;
+}
+.widget h3 {
+    font-size: 18px;
+    color: #666;
+    border-bottom: 1px solid #eaeaea;
+    background-color: #fbfbfb;
+    margin: 0;
+    padding: 11px 15px 10px;
+    position:relative;
+}
+.widget h3 i{
+    margin-right:8px;
+    color:#3ba0ea;
+}
+.widget h3 .info-box,.form-group .info-box{
+    position:absolute;
+    padding:8px;
+    color:#fff;
+    right:0;
+    top:40px;
+    font-size:10px;
+    background-color: #3ba0ea;
+    border-radius: 4px;
+    border: 1px solid #eaeaea;
+    z-index:9999;
+    display:none;
+    max-width:200px;
+}
+.widget .chart{
+    height:600px;
+    min-width:200px;
+    padding-top:30px;
+    padding-bottom:10px;
+}
+.widget .table th,.widget .table td{
+    text-align:center;
+}
+.widget dl{
+    margin-top:15px;
+    font-size:16px
+}
+/*.widget dl dt{
+    color:#3ba0ea
+}*/
+.widget .table {
+    margin-bottom:0;
+}
+/**
+ *footer
+ */
+#footer {
+    color: #ddd;
+    padding: 30px 0 20px;
+    border-top: 1px solid #e5e5e5;
+    margin-top: 70px;
+    background-color:#333;
+}
+#footer ul > li + li:before {
+    padding: 0 10px 0 0px;
+    color: #ddd;
+    content: "|";
+}
+.aside-fix{
+    position:fixed;
+    right:0;
+    top:200px;
+
+}
+
+.pick-show {
+    width:30px;
+    height:30px;
+    position:absolute;
+    left:-30px;
+    top:0px;
+    border-radius:4px;
+    background-color:#3ba0ea;
+    text-align:center;
+    transform:scaleX(-1);
+    -moz-transform:scaleX(-1);
+    -webkit-transform:scaleX(-1);
+    -o-transform:scaleX(-1);
+    transition:all ease-in-out 0.1s;
+}
+.aside-active .pick-show {
+    transform:scaleX(1) !important;
+    -moz-transform:scaleX(1) !important;
+    -webkit-transform:scaleX(1) !important;
+    -o-transform:scaleX(1) !important;
+}
+
+.pick-show:hover{
+    cursor:pointer;
+    background-color:#99c9ed;
+}
+
+.pick-show i{
+    height:30px !important;
+    line-height:30px !important;
+    font-size:18px;
+    top:5px;
+    color:#fff; 
+    /*//margin-left:-20px;*/
+}
+
+.f-main-pick{
+    width:0px;
+    transition:all ease-in-out 0.3s;
+    visibility:hidden;
+}
+.main-pick {
+    width:200px;
+    padding:10px 20px;
+    border: 1px solid #eaeaea; 
+    background-color:#ffffff;
+    border-radius:4px;
+}
+.aside-active .f-main-pick{
+    width:200px;
+    visibility:visible;
+}
+.main-pick select{
+    background-color:#eee;
+}
+.main-pick .form-group{
+    position:relative;
+}
+
+i[class^="icon-"] {
+    width: 1.25em;
+    text-align: center;
+    font-family: FontAwesome;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: inherit;
+    -webkit-font-smoothing: antialiased;
+    display: inline;
+    width: auto;
+    height: auto;
+    line-height: normal;
+    vertical-align: baseline;
+    background-image: none;
+    background-position: 0 0;
+    background-repeat: repeat;
+    margin-top: 0;
+    text-decoration: inherit;
+    speak: none;
+}
+.icon-signer:before {
+    content: "\f012";
+}
+.icon-list-of:before {
+    content: "\f0cb";
+}
+.icon-play:before{
+    content: "\f04b";
+}
+.icon-info-sign:before{
+    content: "\f05a";
+}
+.icon-screenshot:before{
+    content: "\f05b";
+}
+
+.rd-container {
+    border-radius: 4px;
+    border-color:#3ba0ea !important;
+    position:fixed !important;
+}
+.rd-days th, .rd-days td {
+    padding: 3px;
+}

@@ -7,9 +7,11 @@
 	//$mydb->add_group("1号杆塔", "圣惠路", "高新线");
 	//$mydb->add_dev("0912345688", "测试设备", "A相", "1号杆塔", "圣惠路", "高新线");
 	$mydb->get_dev_info("0912345678");
+	echo $mydb->get_user_id_vie_pwd("admin", "111111");
 	echo "<pre>";
-	print_r($mydb->get_dev_info("0912345678"));
+	//print_r($mydb->__get('dbcon'));
+	//print_r($mydb->get_dev_info("0912345678"));
 	
-	print_r($mydb->__get('col_info'));
+	//print_r($mydb->__get('col_info'));
 	echo "</pre>";
 ?>
