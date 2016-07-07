@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	$(".form-login").submit(function(e){
-		//e.preventDefault();
+		e.preventDefault();
 		var data="u="+$("#inputUserName").val()+"&p="+$("#inputPasswd").val()+"";
 		console.log(data);
 		$.ajax({

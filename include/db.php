@@ -161,6 +161,7 @@ class db{
 	protected function get_rows($query){
 		if(!$query)
 			return null;
+		$rows=null;
 		if($this->is_use_mysqli){
 			$result=mysqli_query($this->dbcon,$query);
 			$i=0;
@@ -234,16 +235,31 @@ class db{
 			$row=mysql_fetch_array($this->result);
 		return $row;
 	} 
-	public function add_dev($dev_number,$dev_name,$dev_phase,$group_name,$group_loc,$line_name ){
+	public function add_dev_vi_GLname($dev_number,$dev_name,$dev_phase,$group_name,$group_loc,$line_name ){
 		$group_id=$this->get_group_id($group_name,$group_loc);
 		$line_id=$this->get_line_id($line_name);
-		$query="INSERT INTO devs(dev_number,dev_name,dev_phase,group_id,line_id) VALUES('" . $dev_number."','".$dev_name."','".$dev_phase."',".$group_id.",".$line_id . ")";
-		if($this->is_use_mysqli)
-			$result=mysqli_query($this->dbcon,$query);
-		else 
-			$result=mysql_query($query,$this->dbcon);
-		if(!$result)
-			die("添加设备失败");
+		return add_dev($dev_number,$dev_name,$dev_phase,$group_id,$line_id);
+	}
+	public function add_dev($dev_number,$dev_name,$dev_phase,$group_id,$line_id){
+		$err=null;
+		$i=0;
+		if(!$this->is_group_has_line($group_id,$line_id))
+			$err[$i++]="指定杆塔未绑定相应线路";
+		if($this->has_dev($dev_number))
+			$err[$i++]="设备编号为".$dev_number."的设备已存在";
+		elseif($o_dev_id=$this->is_group_line_phase_has_dev($dev_phase,$group_id,$line_id))
+			$err[$i++]="设备编号为".$o_dev_id."的设备已存在于此位置（含有相同的杆塔、线路和相位信息）";
+		if($i==0){
+			$query="INSERT INTO devs(dev_number,dev_name,dev_phase,group_id,line_id) VALUES('" . $dev_number."','".$dev_name."','".$dev_phase."',".$group_id.",".$line_id . ")";
+			if($this->is_use_mysqli)
+				$result=mysqli_query($this->dbcon,$query);
+			else 
+				$result=mysql_query($query,$this->dbcon);
+			if(!$result)
+				$err[$i++]="添加设备失败";
+		}
+		$result=array('err_count'=>$i,'err'=>$err);
+		return $result;
 	}
 	//返回所有杆塔信息数组
 	public function get_all_groups(){
@@ -296,6 +312,29 @@ class db{
 		else
 			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
 		return $row['line_id'];
+	}
+	//指定杆塔是否绑定了指定线路
+	public function is_group_has_line($group_id,$line_id){
+		$query="SELECT group_id FROM groups WHERE group_id=".$group_id." AND (line_id=".$line_id." OR line_id2=".$line_id.")";
+		$rows=$this->get_rows($query);
+		if($rows&&count($rows)>0)
+			return true;
+		return false;
+	}
+	public function has_dev($dev_number){
+		$query="SELECT group_id FROM devs WHERE dev_number=".$dev_number;
+		$rows=$this->get_rows($query);
+		if($rows&&count($rows)>0)
+			return true;
+		return false;
+	}
+	//某杆塔和线路的某相位上是否存在设备，若存在返回存在设备编号
+	public function is_group_line_phase_has_dev($dev_phase,$group_id,$line_id){
+		$query="SELECT dev_number FROM devs WHERE group_id=".$group_id." AND line_id=".$line_id." AND dev_phase='".$dev_phase."'" ;
+		$rows=$this->get_rows($query);
+		if($rows&&count($rows)>0)
+			return $rows[0]['dev_number'];
+		return false;
 	}
 	public function get_user_id_vie_pwd($user_name,$passwd){
 		$passwdd=md5($passwd);

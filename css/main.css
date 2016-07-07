@@ -118,7 +118,7 @@ table.table > tfoot > tr > th{
     overflow: hidden;
 }
 .widget form{
-	padding-top:15px;
+	padding:15px 10px;
 }
 .widget form .form-group > div > label{
 	padding-top:5px;
@@ -126,6 +126,15 @@ table.table > tfoot > tr > th{
 	font-size:12px;
 	font-weight:normal;
 	color:#777;
+    display: block;
+    min-width:10px;
+    min-height: 27px;
+}
+.widget form span.error{
+    color:red;
+}
+.widget form span.error.success-msg{
+    color:green;
 }
 .widget h3 {
     font-size: 18px;
