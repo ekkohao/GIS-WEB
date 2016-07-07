@@ -6,15 +6,17 @@ function require_db() {
 		return;
 	$mydb = new db();
 }
+//加载footer.php
 function get_footer($file=null){
 	if ($file)
-		require(ABSPATH."/".$file);
+		require_once ABSPATH."/".$file;
 	else
 		require_once ABSPATH.'/footer.php';
 }
+//加载header.php
 function get_header($file=null){
 	if ($file)
-		require(ABSPATH."/".$file);
+		require_once ABSPATH."/".$file;
 	else
 		require_once ABSPATH.'/header.php';
 }

@@ -4,12 +4,9 @@ session_init_and_redirect(false);
 if(!isset($_GET['action'])){
 	if(isset($_SESSION['user_id']))
 		hao_redirect(SITE_URL."/index.php");
-}
-
-	
-if($_GET['action'] == "logout"){
-	unset($_SESSION['user_id']);
-	echo '注销登录成功！';
+}elseif($_GET['action'] == "logout"){
+		unset($_SESSION['user_id']);
+		echo '注销登录成功！';
 }elseif($_GET['action'] == "login"){
 	if(!isset($_POST['username'])||!isset($_POST['passwd'])||!trim($_POST['username'])||!trim($_POST['passwd'])){
 		echo "用户名或密码不能为空";
@@ -27,10 +24,11 @@ if($_GET['action'] == "logout"){
 			echo "用户名或密码错误"; 
 	}
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head runat="server">
+<head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/bootstrap.css" rel="stylesheet" />
@@ -45,6 +43,7 @@ if($_GET['action'] == "logout"){
     <header id="header">
         <div class="container">
             <h1 class="center-block">科鼎地理信息服务系统</h1>
+
         </div>
     </header>
 
@@ -70,8 +69,7 @@ if($_GET['action'] == "logout"){
 					<div class="form-group">
 						<div class="col-sm-offset-2 col-sm-10">
 							<div class="checkbox">
-								<label> <input type="checkbox">记住我
-								</label>
+								<label> <input type="checkbox" />记住我</label>
 							</div>
 						</div>
 					</div>

@@ -158,6 +158,23 @@ class db{
 			return;
 		}
 	}
+	protected function get_rows($query){
+		if(!$query)
+			return null;
+		if($this->is_use_mysqli){
+			$result=mysqli_query($this->dbcon,$query);
+			$i=0;
+			while($row=mysqli_fetch_array($result))
+				$rows[$i++]=$row;
+		}
+		else{
+			$result=mysql_query($query,$this->dbcon);
+			$i=0;
+			while($row=mysql_fetch_array($result))
+				$rows[$i++]=$row;
+		}
+		return $rows;
+	}
 	/**
 	 *获取当前查询结果集中所有列（字段）的对象数组，
 	 *每个对象包含了字段名name、所属表名table、字段最大长度max_length......等等
@@ -192,6 +209,11 @@ class db{
 			}
 		}
 	}
+	//返回所有设备信息数组
+	public function get_all_devs(){
+		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`liness`.line_name FROM devs,groups,`liness` WHERE devs.group_id=groups.group_id AND devs.line_id=`liness`.line_id";
+		return $this->get_rows($query);
+	}
 	protected function load_dev_info($dev_number){
 		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`liness`.line_name FROM devs,groups,`liness` WHERE devs.dev_number='" . $dev_number . "' AND devs.group_id=groups.group_id AND devs.line_id=`liness`.line_id";
 		if($this->is_use_mysqli)
@@ -199,6 +221,7 @@ class db{
 		else
 			$this->result=mysql_query($query,$this->dbcon);
 	}
+	//返回指定设备信息
 	public function get_dev_info($dev_number=null){
 		if($dev_number==null)
 			die("没有获取到设备编号");
@@ -221,6 +244,15 @@ class db{
 			$result=mysql_query($query,$this->dbcon);
 		if(!$result)
 			die("添加设备失败");
+	}
+	//返回所有杆塔信息数组
+	public function get_all_groups(){
+		$query="SELECT * FROM groups";
+		return $this->get_rows($query);
+	}
+	public function get_line_vi_gid($group_id){
+		$query="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
+		return $this->get_rows($query);
 	}
 	public function add_group($group_name,$group_loc,$line_name,$line_name2=null){
 		if($this->get_group_id($group_name, $group_loc))
@@ -257,7 +289,7 @@ class db{
 			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
 		return $row['group_id'];
 	}
-	public function get_line_id($line_name){
+	protected function get_line_id($line_name){
 		$query="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
 		if($this->is_use_mysqli)
 			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
