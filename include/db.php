@@ -212,7 +212,7 @@ class db{
 	}
 	//返回所有设备信息数组
 	public function get_all_devs(){
-		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`liness`.line_name FROM devs,groups,`liness` WHERE devs.group_id=groups.group_id AND devs.line_id=`liness`.line_id";
+		$query ="SELECT * FROM devs";
 		return $this->get_rows($query);
 	}
 	protected function load_dev_info($dev_number){
@@ -256,35 +256,94 @@ class db{
 			else 
 				$result=mysql_query($query,$this->dbcon);
 			if(!$result)
-				$err[$i++]="添加设备失败";
+				$err[$i++]="添加设备失败，请稍后再试";
 		}
-		$result=array('err_count'=>$i,'err'=>$err);
-		return $result;
+		$results=array('err_count'=>$i,'err'=>$err);
+		return $results;
 	}
 	//返回所有杆塔信息数组
 	public function get_all_groups(){
-		$query="SELECT * FROM groups";
+		$query="SELECT * FROM groups ORDER BY group_loc";
 		return $this->get_rows($query);
 	}
 	public function get_line_vi_gid($group_id){
 		$query="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
 		return $this->get_rows($query);
 	}
-	public function add_group($group_name,$group_loc,$line_name,$line_name2=null){
-		if($this->get_group_id($group_name, $group_loc))
-			die("添加失败，已有相同名字的杆塔名和杆塔地址");
+	public function add_group_vi_line_name($group_name,$group_loc,$line_name=null,$line_name2=null,$coor_long,$coor_lat){
+		
 		$line_id=$this->get_line_id($line_name);
-		if($line_name2){
-			$line_id2=$this->get_line_id($line_name2);
-			$query="INSERT INTO groups(group_name,group_loc,line_id,line_id2) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.")";
-		}else 	
-			$query="INSERT INTO groups(group_name,group_loc,line_id) VALUES('".$group_name."','".$group_loc."',".$line_id.")";
-		if($this->is_use_mysqli)
+		$line_id2=$this->get_line_id($line_name2);
+		$results=add_group($group_name,$group_loc,$line_id,$line_id2,$coor_long,$coor_lat);
+		return $results;
+	}
+	public function get_all_groups_info_vi_id(){
+		$query="SELECT * FROM groups";
+		return $this->get_group_info_rows($query);
+	}
+	protected function get_group_info_rows($query){
+		if(!$query)
+			return null;
+		$rows=null;
+		if($this->is_use_mysqli){
 			$result=mysqli_query($this->dbcon,$query);
-		else 
+			$i=0;
+			while($row=mysqli_fetch_array($result))
+				$rows[$row['group_id']]=$row;
+		}
+		else{
 			$result=mysql_query($query,$this->dbcon);
-		if(!$result)
-			die("添加杆塔失败");
+			$i=0;
+			while($row=mysql_fetch_array($result))
+				$rows[$row['group_id']]=$row;
+		}
+		return $rows;
+	}
+	public function add_group($group_name,$group_loc,$line_id=0,$line_id2=0,$coor_long,$coor_lat){
+		$err=null;
+		$i=0;
+		if($this->get_group_id($group_name, $group_loc))
+			$err[$i++]="已有相同名字的杆塔名和杆塔地址";
+		if($line_id==$line_id2&&$line_id)
+			$err[$i++]="一个杆塔的两条线路不能相同";
+
+		if($i==0){
+			$query="INSERT INTO groups(group_name,group_loc,line_id,line_id2,coor_long,coor_lat) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.",".$coor_long.",".$coor_lat.")";
+			if($this->is_use_mysqli)
+				$result=mysqli_query($this->dbcon,$query);
+			else 
+				$result=mysql_query($query,$this->dbcon);
+			if(!$result)
+				$err[$i++]="添加线路失败，请稍后再试";
+		}
+		$results=array('err_count'=>$i,'err'=>$err);
+		return $results;
+	}
+	public function get_all_lines(){
+		$query="SELECT * FROM liness";
+		return $this->get_rows($query);
+	}
+	public function get_all_lines_name_vi_id(){
+		$query="SELECT * FROM liness";
+		return $this->get_line_name_rows($query);
+	}
+	protected function get_line_name_rows($query){
+		if(!$query)
+			return null;
+		$rows=null;
+		if($this->is_use_mysqli){
+			$result=mysqli_query($this->dbcon,$query);
+			$i=0;
+			while($row=mysqli_fetch_array($result))
+				$rows[$row['line_id']]=$row['line_name'];
+		}
+		else{
+			$result=mysql_query($query,$this->dbcon);
+			$i=0;
+			while($row=mysql_fetch_array($result))
+				$rows[$row['line_id']]=$row['line_name'];
+		}
+		return $rows;
 	}
 	public function add_line($line_name){
 		if($this->get_line_id($line_name))
@@ -299,19 +358,31 @@ class db{
 	}
 	protected function get_group_id($group_name,$group_loc){
 		$query="SELECT group_id FROM groups WHERE group_name='" . $group_name . "' AND group_loc='" . $group_loc ."'";
-		if($this->is_use_mysqli)
-			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
-		else
-			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
-		return $row['group_id'];
+		$result=$this->get_rows($query);
+		if($result)
+			return $result[0]['group_id'];
+		return 0;
 	}
 	protected function get_line_id($line_name){
 		$query="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
-		if($this->is_use_mysqli)
-			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
-		else
-			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
-		return $row['line_id'];
+		$result=get_rows($query);
+		if($result)
+			return $result[0]['line_id'];
+		return 0;
+	}
+	protected function get_group_name_vi_id($group_id){
+		$query="SELECT group_name FROM groups WHERE group_id=" . $group_id;
+		$result=$this->get_rows($query);
+		if($result)
+			return $result['group_name'];
+		return "杆塔已删除";
+	}
+	protected function get_line_name_vi_id($line_id){
+		$query="SELECT line_name FROM `liness` WHERE `line_id`=" . $line_id;
+		$result=get_rows($query);
+		if($result)
+			return $result['line_id'];
+		return "线路已删除";
 	}
 	//指定杆塔是否绑定了指定线路
 	public function is_group_has_line($group_id,$line_id){

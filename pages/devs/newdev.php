@@ -44,6 +44,7 @@
 					
 					<?php 
 					require_db();
+					global $mydb;
 					$groups=$mydb->get_all_groups();
 					if($groups&&count($groups)>0){
 					?>
@@ -81,5 +82,5 @@
 		</div>
 	</form>
 </div>
-<div class=""></div>>
+<div class=""></div>
 <script type="text/javascript" src="js/newdev.js"></script>

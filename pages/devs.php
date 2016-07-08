@@ -17,13 +17,12 @@
 	    <div id="bodier" class="">
 	        <div class="container">
 				<?php 
-					if(!isset($_GET['action']))
-						$_GET['action']='devlist';
-					require ABSPATH.'/pages/devs/'.$_GET['action'].'.php';
+				$actions=array("devslist","newdev");
+				hao_load_in('action',$actions,'pages/devs');
 				?>
 			</div>
 	    </div>
-	
+		
 		<?php get_footer();?>
     
 	</body>

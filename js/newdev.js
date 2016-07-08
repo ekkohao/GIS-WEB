@@ -42,7 +42,7 @@ $(document).ready(function(){
 		var line_id=$.trim($('#selectLine').val());
 		var reg=/^[A-Za-z0-9]+$/;
 		var hasError=0;
-		if(!reg.test(dev_num)||dev_num.length!=10){
+		if(dev_num.match(reg)==null||dev_num.length!=10){
 			$('.error-devnum').html("设备编号的格式或长度错误");
 			hasError++;
 		}
@@ -77,7 +77,7 @@ $(document).ready(function(){
 		        //error: errorFunction,  //错误执行方法    
 		        success: function (t) {
 		        	if(t.stat==0){
-		        		$('.success-msg').html("设备添加成功").show();
+		        		$('.success-msg').html("设备["+dev_num+"]添加成功").show();
 		        		return;
 		        	}
 		        	else {

@@ -61,4 +61,27 @@ function _deep_replace( $search, $subject ) {
 	}
 	return $subject;
 }
+function hao_require($filepath){
+	if(file_exists($filepath))
+		require $filepath;
+	else{
+		hao_redirect(SITE_URL."/404.php",404);
+		exit();
+	}
+}
+function hao_require_once($filepath){
+	if(file_exists($filepath))
+		require_once $filepath;
+	else{
+		header("status: 404 Not Found");
+		hao_redirect(SITE_URL."/404.php",404);
+		exit();
+	}
+}
+//单页面入后函数，$keyname为url变量名，arr位变量取值范围，arr[0]位默认值
+function hao_load_in($keyname,$arr,$dir){
+	if(!isset($_GET[$keyname])||!in_array($_GET[$keyname],$arr))
+		$_GET[$keyname]=$arr[0];
+	hao_require(ABSPATH.'/'.$dir.'/'.$_GET[$keyname].'.php');
+}
 ?>
