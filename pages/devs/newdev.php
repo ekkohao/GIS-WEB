@@ -10,13 +10,6 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="inputDevName" class="col-sm-3 control-label">设备名</label>
-			<div class="col-sm-6">
-				<input type="text" class="form-control" id="inputDevName" placeholder="设备名" required="required">
-				<label>设备名长度在30个字符以内&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-devname"></span></label>
-			</div>
-		</div>
-		<div class="form-group">
 			<label for="selectDevPhase" class="col-sm-3 control-label">设备相位</label>
 			<div class="col-sm-6">
 				<select class="form-control" id="selectDevPhase">
@@ -24,15 +17,6 @@
 					<option value="A相">A相</option>
 					<option value="B相">B相</option>
 					<option value="C相">C相</option>
-					<option value="上">上</option>
-					<option value="中">中</option>
-					<option value="下">下</option>
-					<option value="左上">左上</option>
-					<option value="左中">左中</option>
-					<option value="左下">左下</option>
-					<option value="右上">右上</option>
-					<option value="右中">右中</option>
-					<option value="右下">右下</option>
 				</select>
 				<label><span class="error error-devphase"></span></label>
 			</div>
@@ -61,7 +45,7 @@
 					}
 					?>
 				</select>
-				<label><a href="javascript:void(0)">添加新杆塔</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0)">添加线路至杆塔</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-group"></span></label>
+				<label><a href="javascript:void(0)">添加新杆塔</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-group"></span></label>
 			</div>
 		</div>
 		<div class="form-group">
@@ -70,7 +54,7 @@
 				<select class="form-control" id="selectLine" disabled="disabled">
 					<option selected="selected" value="0">请先选择杆塔</option>
 				</select>
-				<label><a href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line"></span></label>
+				<label><a href="javascript:void(0)">添加线路至杆塔</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line"></span></label>
 			</div>
 		</div>
 		<div class="form-group">

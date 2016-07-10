@@ -5,7 +5,7 @@ require ABSPATH.'/setting.php';
 header("Content-type:application/json; charset=UTF-8");
 require_db();
 $group_id = htmlspecialchars($_POST['gId']);
-$lines=$mydb->get_line_vi_gid($group_id);
+$lines=$mydb->get_lines_vi_gid($group_id);
 if($lines&&count($lines)>0){
 	$stat=count($lines);
 }

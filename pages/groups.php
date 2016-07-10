@@ -17,7 +17,7 @@
 	    <div id="bodier" class="">
 	        <div class="container">
 				<?php 		
-				$actions=array("groupslist","newgro");
+				$actions=array("groupslist","newgro","editgro");
 				hao_load_in('action',$actions,'pages/groups');
 				?>
 			</div>

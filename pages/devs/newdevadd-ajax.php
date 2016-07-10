@@ -4,12 +4,12 @@ if(!defined('ABSPATH'))
 require ABSPATH.'/setting.php';
 header("Content-type:application/json; charset=UTF-8");
 require_db();
-$dev_num= $_POST['dev_num'];
-$dev_name= $_POST['dev_name'];
-$dev_phase= $_POST['dev_phase'];
-$group_id = $_POST['group_id'];
-$line_id=$_POST['line_id'];
-$result=$mydb->add_dev($dev_num,$dev_name,$dev_phase,$group_id,$line_id);
+if($_POST['mode']==1)
+	$result=$mydb->update_dev($_POST['dev_id'],$_POST['dev_num'],$_POST['dev_phase'],$_POST['group_id'],$_POST['line_id']);
+elseif($_POST['mode']==2)
+	$result=$mydb->delete_dev($_POST['dev_id']);
+else
+	$result=$mydb->add_dev($_POST['dev_num'],$_POST['dev_phase'],$_POST['group_id'],$_POST['line_id']);
 $data=array('stat'=>$result['err_count'],'data'=>$result['err']);
 $json=json_encode($data);
 echo $json;

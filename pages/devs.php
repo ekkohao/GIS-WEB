@@ -17,7 +17,7 @@
 	    <div id="bodier" class="">
 	        <div class="container">
 				<?php 
-				$actions=array("devslist","newdev");
+				$actions=array("devslist","newdev","editdev");
 				hao_load_in('action',$actions,'pages/devs');
 				?>
 			</div>
