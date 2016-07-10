@@ -315,35 +315,35 @@ class db{
 		return $rows[0];
 
 	}
-	//返回所有设备信息数组
+	//返回所有设备信息数组，组合了杆塔和线路信息
 	public function get_all_devs(){
 		$query ="SELECT * FROM devs";
-		return $this->get_rows($query);
+		$rows=$this->get_rows($query);
+		$groupsarr=$this->get_all_groups_info_index_id();
+		$linesarr=$this->get_all_lines_info_index_id();
+		$groupsarr[0]['group_loc']=$linesarr[0]['line_name']='未绑定';
+		$groupsarr[0]['group_name']='&nbsp;';
+		$rerows=null;
+		$i=0;
+		foreach ($rows as $row) {
+			$rerows[$i]=$row;
+			$rerows[$i]['group_loc']=isset($groupsarr[$row['group_id']]['group_loc'])?$groupsarr[$row['group_id']]['group_loc']:'杆塔已删除';
+			$rerows[$i]['group_name']=isset($groupsarr[$row['group_id']]['group_name'])?$groupsarr[$row['group_id']]['group_name']:'&nbsp;';
+			$rerows[$i++]['line_name']=isset($linesarr[$row['line_id']]['line_name'])?$linesarr[$row['line_id']]['line_name']:'线路已删除';
+		}
+		return $rerows;
 	}
-	protected function load_dev_info($dev_number){
-		$query ="SELECT devs.dev_number,devs.dev_name,devs.dev_phase,groups.group_name,groups.group_loc,`liness`.line_name FROM devs,groups,`liness` WHERE devs.dev_number='" . $dev_number . "' AND devs.group_id=groups.group_id AND devs.line_id=`liness`.line_id";
-		if($this->is_use_mysqli)
-			$this->result=mysqli_query($this->dbcon,$query);
-		else
-			$this->result=mysql_query($query,$this->dbcon);
-	}
-	//返回指定设备信息
-	public function get_dev_info($dev_number=null){
-		if($dev_number==null)
-			die("没有获取到设备编号");
-		$this->load_dev_info($dev_number);
-		if(!$this->result)
-			return false;
-		if($this->is_use_mysqli)
-			$row=mysqli_fetch_array($this->result);
-		else
-			$row=mysql_fetch_array($this->result);
-		return $row;
-	} 
-	public function add_dev_vi_GLname($dev_number,$dev_phase,$group_name,$group_loc,$line_name ){
-		$group_id=$this->get_group_id($group_name,$group_loc);
-		$line_id=$this->get_line_id($line_name);
-		return add_dev($dev_number,$dev_phase,$group_id,$line_id);
+	//返回一个三维数组，用【线路ID】【杆塔ID】【相位】下标反查设备编号
+	protected function get_all_devs_num_index_line_id_gro_id_dev_phase(){
+		$query ="SELECT * FROM devs";
+		$rows=$this->get_rows($query);
+		if(!$rows||sizeof($rows)<1)
+			return null;
+		$rerows=null;
+		foreach ($rows as $row) {
+			$rerows[$row['line_id']][$row['group_id']][$row['dev_phase']]=$row['dev_number'];
+		}
+		return $rerows;
 	}
 
 	/************************************************************************************
@@ -448,7 +448,24 @@ class db{
 	//返回所有杆塔信息数组
 	public function get_all_groups(){
 		$query="SELECT * FROM groups ORDER BY group_loc";
-		return $this->get_rows($query);
+		$rows=$this->get_rows($query);
+		$linesarr=$this->get_all_lines_info_index_id();
+		$devnumsarr=$this->get_all_devs_num_index_line_id_gro_id_dev_phase();
+		$linesarr[0]['line_name']='未绑定';
+		$rerows=null;
+		$i=0;
+		foreach ($rows as $row) {
+			$rerows[$i]=$row;
+			$rerows[$i]['line_name']=isset($linesarr[$row['line_id']]['line_name'])?$linesarr[$row['line_id']]['line_name']:'线路已删除';
+			$rerows[$i]['line_name2']=isset($linesarr[$row['line_id2']]['line_name'])?$linesarr[$row['line_id2']]['line_name']:'线路已删除';
+			$rerows[$i]['dev_on_A']=isset($devnumsarr[$row['line_id']][$row['group_id']]['A相'])?$devnumsarr[$row['line_id']][$row['group_id']]['A相']:'无';
+			$rerows[$i]['dev_on_B']=isset($devnumsarr[$row['line_id']][$row['group_id']]['B相'])?$devnumsarr[$row['line_id']][$row['group_id']]['B相']:'无';
+			$rerows[$i]['dev_on_C']=isset($devnumsarr[$row['line_id']][$row['group_id']]['C相'])?$devnumsarr[$row['line_id']][$row['group_id']]['C相']:'无';
+			$rerows[$i]['dev_on_2A']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['A相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['A相']:'无';
+			$rerows[$i]['dev_on_2B']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['B相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['B相']:'无';
+			$rerows[$i++]['dev_on_2C']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['C相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['C相']:'无';
+		}
+		return $rerows;
 	}
 
 
@@ -465,24 +482,20 @@ class db{
 		return $results;
 	}
 	//数组下标存数杆塔id，相应值为数组的所有信息
-	public function get_all_groups_info_vi_id(){
+	public function get_all_groups_info_index_id(){
 		$query="SELECT * FROM groups";
-		return $this->get_group_info_rows($query);
-	}
-	//数组下标存数杆塔id，相应值为数组的所有信息
-	protected function get_group_info_rows($query){
-		if(!$query)
-			return null;
 		$rows=null;
 		if($this->is_use_mysqli){
 			$result=mysqli_query($this->dbcon,$query);
-			$i=0;
+			if(!$result)
+				return null;		
 			while($row=mysqli_fetch_array($result))
 				$rows[$row['group_id']]=$row;
 		}
 		else{
 			$result=mysql_query($query,$this->dbcon);
-			$i=0;
+			if(!$result)
+				return null;
 			while($row=mysql_fetch_array($result))
 				$rows[$row['group_id']]=$row;
 		}
@@ -533,28 +546,26 @@ class db{
 		$query="SELECT * FROM liness";
 		return $this->get_rows($query);
 	}
-	public function get_all_lines_name_vi_id(){
+	public function get_all_lines_info_index_id(){
 		$query="SELECT * FROM liness";
-		return $this->get_line_name_rows($query);
-	}
-	protected function get_line_name_rows($query){
-		if(!$query)
-			return null;
 		$rows=null;
 		if($this->is_use_mysqli){
 			$result=mysqli_query($this->dbcon,$query);
-			$i=0;
+			if(!$result)
+				return null;
 			while($row=mysqli_fetch_array($result))
-				$rows[$row['line_id']]=$row['line_name'];
+				$rows[$row['line_id']]=$row;
 		}
 		else{
 			$result=mysql_query($query,$this->dbcon);
-			$i=0;
+			if(!$result)
+				return null;
 			while($row=mysql_fetch_array($result))
-				$rows[$row['line_id']]=$row['line_name'];
+				$rows[$row['line_id']]=$row;
 		}
 		return $rows;
 	}
+
 	/*******************************************************
 	 *line
 	 ******************************************************/
@@ -574,6 +585,7 @@ class db{
 			if(!$result)
 				$err[$i++]=("添加线路失败");
 		}
+
 		$res=array('err_count'=>$i,'err'=>$err);
 		return $res;
 	}
@@ -622,7 +634,7 @@ class db{
 			return true;
 		return false;
 	}
-	protected function get_line_id_vi_name($line_name){
+	public function get_line_id_vi_name($line_name){
 		$query="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
 		$result=$this->get_rows($query);
 		if($result)

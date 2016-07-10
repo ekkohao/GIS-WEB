@@ -32,11 +32,20 @@ table.striped > tbody > tr > td,table.striped > tbody > tr > th{
 	border-top:none;
 	line-height:1.5em;
 }
+table.striped > tbody > tr > td.togray{
+    color:#bbb;
+}
 table.striped > tbody > tr > td strong{
 	display:block;
 	color:#4C9ED9;
 }
-table.striped > tbody > tr > td span{
+table.striped > tbody > tr > td > .row-actions{
+    visibility: hidden;
+}
+table.striped > tbody > tr:hover > td > .row-actions{
+    visibility: visible;
+}
+table.striped > tbody > tr > td .row-actions span{
     display:inline-block;
     margin-right:8px;
     padding:3px 6px;
@@ -50,30 +59,51 @@ table.striped > tbody > tr > td span{
     line-height: 12px;
     cursor: pointer;
 }
-table.striped > tbody > tr > td span:hover{
+table.striped > tbody > tr > td .row-actions span:hover{
     background-color:#2482c6;
 }
-table.striped > tbody > tr > td span.delete{
+table.striped > tbody > tr > td .row-actions span.delete{
     background-color:#ef3c3c;
     border-color: #db2a2a;
 }
-table.striped > tbody > tr > td span.delete:hover{
+table.striped > tbody > tr > td .row-actions span.delete:hover{
     background-color:#db2a2a;
 }
-table.striped > tbody > tr > td span a{
+table.striped > tbody > tr > td .row-actions span a{
     color:#fff;
 }
-table.striped > tbody > tr > td > .row-actions{
-	visibility: hidden;
+table.striped > tbody > tr > td span.line-circle i{
+    display:inline-block;
+    margin-right:5px;
+    padding:0;
+    height: 12px;
+    width:12px;
+    background-color:#f25959;
+    border:1px solid #e02a2a;
+    border-radius: 50%;
+    cursor: pointer;
 }
-table.striped > tbody > tr:hover > td> .row-actions{
-	visibility: visible;
+table.striped > tbody > tr > td span.line-circle i:hover{
+    background-color:#e02a2a;
+
+}
+table.striped > tbody > tr > td span.line-circle i.tolight{
+    background-color:#16c017;
+    border-color: #0c950d;
+
+}
+table.striped > tbody > tr > td span.line-circle i.tolight:hover{
+    background-color:#0c950d;
+
+}
+table.striped > tbody > tr > td.togray span.line-circle{
+    display: none;
 }
 table.table > thead > tr > th{
 	border-bottom: 1px solid #e5e5e5;
 }
 table.table > thead > tr > th.select{
-    width:10px;
+    width:0px;
 }
 table.table > tfoot > tr > th{
 	border-top: 1px solid #e5e5e5;

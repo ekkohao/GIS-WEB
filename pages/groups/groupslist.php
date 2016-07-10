@@ -1,12 +1,11 @@
 <div class="btn-group">
 	<a id="add_group" href="index.php?page=groups&action=newgro" class="btn btn-success">新增杆塔 </a>
 </div>
+
 <?php 
-require_db();
+
 global $mydb;
 $groups=$mydb->get_all_groups();
-$lines=$mydb->get_all_lines_name_vi_id();
-$lines[0]='无';
 if($groups&&count($groups)>0){
 ?>
 	<table class="table striped table-grolist">
@@ -16,13 +15,15 @@ if($groups&&count($groups)>0){
 		<tbody>
 		<?php
 		foreach ($groups as $group){
-			if(!isset($lines[$group['line_id']]))
-				$lines[$group['line_id']]='已删除';
-
-			if(!isset($lines[$group['line_id2']]))
-				$lines[$group['line_id2']]='已删除';
-			
-			echo '<tr><td><input id="cb-select-'.$group['group_id'].'" type="hidden" value="'.$group['group_id'].'"><br />&nbsp;</td><td><strong>'.$group['group_name'].'</strong><div class="row-actions"><span class="edit"><a href="index.php?page=groups&action=editgro&groid='.$group['group_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td><strong>'.$group['group_loc'].'</strong></td><td>'.$lines[$group['line_id']].'</td><td>'.$lines[$group['line_id2']].'</td><td>经度：'.$group['coor_long'].'<br/>维度：'.$group['coor_lat'].'</td></tr>';
+			$tdclass1=	($group['line_name']=='未绑定'||$group['line_name']=='线路已删除')?'togray':'';
+			$tdclass2=	($group['line_name2']=='未绑定'||$group['line_name2']=='线路已删除')?'togray':'';
+			$iclass1= $group['dev_on_A']!='无'?'tolight':'';
+			$iclass2= $group['dev_on_B']!='无'?'tolight':'';
+			$iclass3= $group['dev_on_C']!='无'?'tolight':'';
+			$iclass4= $group['dev_on_2A']!='无'?'tolight':'';
+			$iclass5= $group['dev_on_2B']!='无'?'tolight':'';
+			$iclass6= $group['dev_on_2C']!='无'?'tolight':'';
+			echo '<tr><td><input id="cb-select-'.$group['group_id'].'" type="hidden" value="'.$group['group_id'].'"><br />&nbsp;</td><td><strong>'.$group['group_name'].'</strong><div class="row-actions"><span class="edit"><a href="index.php?page=groups&action=editgro&groid='.$group['group_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td><strong>'.$group['group_loc'].'</strong></td><td class="'.$tdclass1.'">'.$group['line_name'].'<br /><span class="line-circle"><i class="'.$iclass1.'" title="'.$group['dev_on_A'].'"></i><i class="'.$iclass2.'" title="'.$group['dev_on_B'].'"></i><i class="'.$iclass3.'" title="'.$group['dev_on_C'].'"></i></span></td><td class="'.$tdclass2.'">'.$group['line_name2'].'<br /><span class="line-circle"><i class="'.$iclass4.'" title="'.$group['dev_on_2A'].'"></i><i class="'.$iclass5.'" title="'.$group['dev_on_2B'].'"></i><i class="'.$iclass6.'" title="'.$group['dev_on_2C'].'"></i></span></td><td>经度：'.$group['coor_long'].'<br/>维度：'.$group['coor_lat'].'</td></tr>';
 		}
 		?>
 		</tbody>

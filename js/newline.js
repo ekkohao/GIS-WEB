@@ -1,5 +1,4 @@
 $(document).ready(function(){
-	var new_id=0;
 	var commit_flag=false;
 	var sh;
 	var intV=10;
@@ -96,21 +95,24 @@ $(document).ready(function(){
 	}
 	function submitClick(){
 		$('.form-addline span.error').html("").hide();
-		var btn=$('.form-newline button.btn');
+		var btn=$('.form-addline button.btn');
 		btn.attr("disabled","disabled");
 		line_name=$.trim($('#inputLineName').val());
 		if(line_name.length>30){
 			$('.error-linename').html('线路名的长度过长').show();
+			btn.attr('disabled',false);
 			return;
 		}
 		if(mode==1&&line_name==line_old_name){
 			$('.error-linename').html('线路名称未改动').show();
+			btn.attr('disabled',false);
 			return;
 		}
 		if(!commit_flag){
 			commit_flag=true;
 			$('.success-msg').html(intV+"秒内再次点击按钮来"+modeName[mode]+"线路["+line_name+"]").show();
 			sh=setInterval(commitMsg,1000);
+			btn.attr('disabled',false);
 			return;
 		}
 		msgReset();
@@ -126,10 +128,11 @@ $(document).ready(function(){
 		        	if(t.stat==0){
 		        		$('.form-addline .success-msg').html("线路["+line_name+"]"+modeName[mode]+"成功").show();
 		        		if(mode==0)
-		        			$('.form-addline .table-line tbody').append('<tr><td><input id="cb-select-new'+(new_id++)+'" type="checkbox" value="'+line_name+'"><br />&nbsp;</td><td><strong>'+line_name+'</strong><div class="row-actions"><span class="edit"><a href="" title="编辑此项目">编辑</a></div></td><td></td></tr>');
+		        			$('.table-line tbody').append('<tr><td><input id="cb-select-'+t.line_id+'" type="hidden" value="'+t.line_id+'"><br />&nbsp;</td><td><strong>'+line_name+'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td></td></tr>');
 		        		else
 		        			changeTr.find('td:eq(1) strong').html(line_name);
 		        		line_old_name=line_name;
+		        		btn.attr('disabled',false);
 		        		return;
 		        	}
 		        	else {
@@ -137,11 +140,13 @@ $(document).ready(function(){
 		        			$('.form-addline .error-msg').append(t.data[i]+'<br />').show();
 		        		}
 		        	}
+		        	btn.attr('disabled',false);
 		        },
 		        error: function () {
 		        	$('.form-addline .error-msg').html('网络错误，请稍后再试').show();
+		        	btn.attr('disabled',false);
 		        }
 		 });
-		btn.attr('disabled',false);
+		
 	}
 })

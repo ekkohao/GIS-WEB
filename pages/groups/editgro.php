@@ -53,7 +53,7 @@ $group=$mydb->get_group($_GET['groid']);
 						?>
 					</select>
 					<label>
-						<a href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line1"></span>
+						<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line1"></span>
 						<br />可为空，表示暂不添加线路
 					</label>
 				</div>
@@ -118,5 +118,26 @@ $group=$mydb->get_group($_GET['groid']);
 	}
 	?>
 </div>
-<div class=""></div>
+<div class="pop-box pop-addline">
+	<form class="form-horizontal form-addline">
+		<div class="remove-x"><i class="fa fa-remove"></i></div>
+		<h3 class="center-block">添加新线路</h3>
+		<div class="form-group">
+			<label for="inputLineName" class="col-sm-3 control-label">线路名</label>
+			<div class="col-sm-6">
+				<input type="text" class="form-control" id="inputLineName"
+					placeholder="线路名" required="required">
+				<label>线路名长度在30个字符以内&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-linename"></span></label>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="selectLine" class="col-sm-3 control-label"></label>
+			<div class="col-sm-6">
+				<button type="submit" class="btn btn-success">确定添加</button>
+				<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
+			</div>
+		</div>
+
+	</form>
+</div>
 <script type="text/javascript" src="js/newgro.js"></script>

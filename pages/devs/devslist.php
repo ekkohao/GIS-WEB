@@ -2,35 +2,28 @@
 	<a id="add_dev" href="index.php?page=devs&action=newdev" class="btn btn-success">新增设备 </a>
 </div>
 <?php 
-require_db();
+
 global $mydb;
 $devs=$mydb->get_all_devs();
-$groupsarr=$mydb->get_all_groups_info_vi_id();
-$linesarr=$mydb->get_all_lines_name_vi_id();
-$groupsarr[0]['group_loc']=$linesarr[0]='无';
-$groupsarr[0]['group_name']='&nbsp;';
+
 if($devs&&count($devs)>0){
 ?>
 	<table class="table striped table-devlist">
 		<thead><tr>
-			<th><input id="cb-select-all" type="checkbox"></th><th>设备编号</th><th>设备名</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
+			<th><input id="cb-select-all" type="checkbox"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
 		</tr></thead>
 		<tbody>
 		<?php
 		$i=1;
 		foreach ($devs as $dev){
-			if(!isset($groupsarr[$dev['group_id']]['group_name'])){
-				$groupsarr[$dev['group_id']]['group_name']='&nbsp;';
-				$groupsarr[$dev['group_id']]['group_loc']='已删除';
-			}
-			if(!isset($linesarr[$dev['line_id']]))
-				$linesarr[$dev['line_id']]='已删除';
-			echo '<tr><td><input id="cb-select-'.$dev['dev_id'].'" type="checkbox" value="'.$dev['dev_id'].'"><br />&nbsp;</td><td><strong>'.$dev['dev_number'].'</strong><div class="row-actions"><span class="edit"><a href="index.php?page=devs&action=editdev&devid='.$dev['dev_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td>'.$dev['dev_name'].'</td><td>'.$dev['dev_phase'].'</td><td>'.$groupsarr[$dev['group_id']]['group_loc'].'<br />'.$groupsarr[$dev['group_id']]['group_name'].'</td><td>'.$linesarr[$dev['line_id']].'</td></tr>';
+			$tdclass1=	($dev['group_name']=='&nbsp;')?'togray':'';
+			$tdclass2=	($dev['line_name']=='未绑定'||$dev['line_name']=='线路已删除')?'togray':'';
+			echo '<tr><td><input id="cb-select-'.$dev['dev_id'].'" type="checkbox" value="'.$dev['dev_id'].'"><br />&nbsp;</td><td><strong>'.$dev['dev_number'].'</strong><div class="row-actions"><span class="edit"><a href="index.php?page=devs&action=editdev&devid='.$dev['dev_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td>'.$dev['dev_phase'].'</td><td class="'.$tdclass1.'">'.$dev['group_loc'].'<br />'.$dev['group_name'].'</td><td class="'.$tdclass1.'">'.$dev['line_name'].'</td></tr>';
 		}
 		?>
 		</tbody>
 		<tfoot><tr>
-			<th><input id="cb-select-all" type="checkbox"></th><th>设备编号</th><th>设备名</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
+			<th><input id="cb-select-all" type="checkbox"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
 		</tr></tfoot>
 	</table>
 	<div class="pop-box pop-deldev">
