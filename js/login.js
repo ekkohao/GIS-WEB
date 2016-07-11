@@ -19,7 +19,6 @@ $(document).ready(function() {
 		        			reurl=location.href.replace("login","index");
 		        		window.location.href=reurl;
 		        	}
-		        	console.log(t.stat);
 		        }
 		 });
 

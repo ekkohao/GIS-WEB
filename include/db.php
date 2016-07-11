@@ -6,9 +6,10 @@ class db{
 	//保存查询结果的列的列（字段）属性
 	protected $col_info;
 	//保存执行的查询语句
-	var $queries;
+	protected $queries;
 	//设置数据库重连次数
-	protected $reconnect_retries = 5;
+	protected $last_errors=null;
+	//protected $reconnect_retries = 5;
 	//数据库前缀
 	var $prefix = '';
 	//数据库连接句柄
@@ -159,12 +160,12 @@ class db{
 		}
 	}
 
-	protected function get_rows($query){
-		if(!$query)
+	protected function get_rows(){
+		if(!$this->queries)
 			return null;
 		$rows=null;
 		if($this->is_use_mysqli){
-			$result=mysqli_query($this->dbcon,$query);
+			$result=mysqli_query($this->dbcon,$this->queries);
 			if(!$result)
 				return null;
 			$i=0;
@@ -172,7 +173,7 @@ class db{
 				$rows[$i++]=$row;
 		}
 		else{
-			$result=mysql_query($query,$this->dbcon);
+			$result=mysql_query($this->queries,$this->dbcon);
 			if(!$result)
 				return null;
 			$i=0;
@@ -180,6 +181,13 @@ class db{
 				$rows[$i++]=$row;
 		}
 		return $rows;
+	}
+	protected function get_result(){
+		if($this->is_use_mysqli)
+			$result=mysqli_query($this->dbcon,$this->queries);
+		else
+			$result=mysql_query($this->queries,$this->dbcon);
+		return $result;
 	}
 	/**
 	 *获取当前查询结果集中所有列（字段）的对象数组，
@@ -215,6 +223,10 @@ class db{
 			}
 		}
 	}
+	protected set_errors($err_count,$err_arr){
+		$this->last_errors['count']=$err_count;
+		$this->last_errors['err_arr']=$err_arr;
+	}
 	/**********************************************
 	 *dev
 	 *********************************************/
@@ -224,21 +236,20 @@ class db{
 		$i=0;
 		if(!$this->is_group_has_line($group_id,$line_id))
 			$err[$i++]="指定杆塔未绑定相应线路";
-		if($this->has_dev_vi_number($dev_number))
+		if($this->get_dev_vi_number($dev_number))
 			$err[$i++]="设备编号为".$dev_number."的设备已存在";
 		elseif($o_dev=$this->has_dev_on_line_group_phase($dev_phase,$group_id,$line_id))
 			$err[$i++]="设备编号为".$o_dev['dev_number']."的设备已存在于此位置（含有相同的杆塔、线路和相位信息）";
 		if($i==0){
-			$query="INSERT INTO devs(dev_number,dev_phase,group_id,line_id) VALUES('" . $dev_number."','".$dev_phase."',".$group_id.",".$line_id . ")";
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="INSERT INTO devs(dev_number,dev_phase,group_id,line_id) VALUES('" . $dev_number."','".$dev_phase."',".$group_id.",".$line_id . ")";
+				$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="添加设备失败，请稍后再试";
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//----------------------------------------------------------已规范化
 	public function update_dev($dev_id,$dev_number,$dev_phase,$group_id,$line_id){
@@ -246,21 +257,20 @@ class db{
 		$i=0;
 		if(!$this->is_group_has_line($group_id,$line_id))
 			$err[$i++]="指定杆塔未绑定相应线路";
-		if(($flagid=$this->has_dev_vi_number($dev_number))&&$flagid!=$dev_id)
+		if(($flagid=$this->get_dev_vi_number($dev_number))&&$flagid!=$dev_id)
 			$err[$i++]="设备编号为".$dev_number."的设备已存在";
 		elseif(($o_dev=$this->has_dev_on_line_group_phase($dev_phase,$group_id,$line_id))&&$o_dev['dev_id']!=$dev_id)
 			$err[$i++]="设备编号为".$o_dev['dev_number']."的设备已存在于此位置（含有相同的杆塔、线路和相位信息）";
 		if($i==0){
-			$query="UPDATE devs SET dev_name='".$dev_number."',dev_phase='".$dev_phase."',group_id=".$group_id.",line_id=".$line_id." WHERE dev_id=".$dev_id;
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="UPDATE devs SET dev_name='".$dev_number."',dev_phase='".$dev_phase."',group_id=".$group_id.",line_id=".$line_id." WHERE dev_id=".$dev_id;
+			$result-$this->get_result();
 			if(!$result)
 				$err[$i++]="修改设备信息失败";
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//删除设备----------------------------------------已规范化
 	public function delete_dev($dev_id){
@@ -269,45 +279,45 @@ class db{
 		if(!$this->has_dev($dev_id))
 			$err[$i++]="设备不存在或已删除";
 		else{
-			$query="DELETE FROM devs WHERE dev_id=".$dev_id;
+			$this->queries="DELETE FROM devs WHERE dev_id=".$dev_id;
 			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+				$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("删除失败失败，请稍后再试");
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//是否存在某个线路--------------------------已规范化
 	protected function has_dev($dev_id){
-		$query="SELECT `dev_id` FROM `devs` WHERE `dev_id`=".$dev_id;
-		$rows=$this->get_rows($query);
-		if($rows&&sizeof($rows)>0)
+		$this->queries="SELECT `dev_id` FROM `devs` WHERE `dev_id`=".$dev_id;
+		$result=$this->get_result();
+		if($result)
 			return true;
 		return false;
 	}
 	//若有返回devid
-	protected function has_dev_vi_number($dev_number){
-		$query="SELECT dev_id FROM devs WHERE dev_number=".$dev_number;
-		$rows=$this->get_rows($query);
+	protected function get_dev_vi_number($dev_number){
+		$this->queries="SELECT dev_id FROM devs WHERE dev_number=".$dev_number;
+		$rows=$this->get_rows();
 		if($rows&&count($rows)>0)
 			return $rows[0]['dev_id'];
 		return false;
 	}
 	//某杆塔和线路的某相位上是否存在设备，若存在返回存在设备信息
 	public function has_dev_on_line_group_phase($dev_phase,$group_id,$line_id){
-		$query="SELECT dev_number,dev_id FROM devs WHERE group_id=".$group_id." AND line_id=".$line_id." AND dev_phase='".$dev_phase."'" ;
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT dev_number,dev_id FROM devs WHERE group_id=".$group_id." AND line_id=".$line_id." AND dev_phase='".$dev_phase."'" ;
+		$rows=$this->get_rows();
 		if($rows&&count($rows)>0)
 			return $rows[0];
 		return false;
 	}
 	//获取设备信息，组合进杆塔和线路信息
 	public function get_dev($dev_id){
-		$query ="SELECT * FROM devs WHERE dev_id=".$dev_id;
-		$rows=$this->get_rows($query);
+		$this->queries ="SELECT * FROM devs WHERE dev_id=".$dev_id;
+		$rows=$this->get_rows();
 		if(!$rows||sizeof($rows)<1)
 			return null;
 		$rows[0]['line_name']=$this->get_real_line_name($rows[0]['line_id']);
@@ -317,8 +327,8 @@ class db{
 	}
 	//返回所有设备信息数组，组合了杆塔和线路信息
 	public function get_all_devs(){
-		$query ="SELECT * FROM devs";
-		$rows=$this->get_rows($query);
+		$this->queries ="SELECT * FROM devs";
+		$rows=$this->get_rows();
 		$groupsarr=$this->get_all_groups_info_index_id();
 		$linesarr=$this->get_all_lines_info_index_id();
 		$groupsarr[0]['group_loc']=$linesarr[0]['line_name']='未绑定';
@@ -335,8 +345,8 @@ class db{
 	}
 	//返回一个三维数组，用【线路ID】【杆塔ID】【相位】下标反查设备编号
 	protected function get_all_devs_num_index_line_id_gro_id_dev_phase(){
-		$query ="SELECT * FROM devs";
-		$rows=$this->get_rows($query);
+		$this->queries ="SELECT * FROM devs";
+		$rows=$this->get_rows();
 		if(!$rows||sizeof($rows)<1)
 			return null;
 		$rerows=null;
@@ -361,16 +371,15 @@ class db{
 			$err[$i++]="一个杆塔的两条线路不能相同";
 
 		if($i==0){
-			$query="INSERT INTO groups(group_name,group_loc,line_id,line_id2,coor_long,coor_lat) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.",".$coor_long.",".$coor_lat.")";
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="INSERT INTO groups(group_name,group_loc,line_id,line_id2,coor_long,coor_lat) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.",".$coor_long.",".$coor_lat.")";
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="添加线路失败，请稍后再试";
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//----------------------------------已规范化
 	public function update_group($group_id,$group_name,$group_loc,$line_id=0,$line_id2=0,$coor_long,$coor_lat){
@@ -381,16 +390,15 @@ class db{
 		if($line_id==$line_id2&&$line_id)
 			$err[$i++]="一个杆塔的两条线路不能相同";
 		if($i==0){
-			$query="UPDATE groups SET group_name='".$group_name."',group_loc='".$group_loc."',line_id=".$line_id.",line_id2=".$line_id2.",coor_long=".$coor_long.",coor_lat=".$coor_lat." WHERE group_id=".$group_id;
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="UPDATE groups SET group_name='".$group_name."',group_loc='".$group_loc."',line_id=".$line_id.",line_id2=".$line_id2.",coor_long=".$coor_long.",coor_lat=".$coor_lat." WHERE group_id=".$group_id;
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改线路失败，请稍后再试";
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//删除杆塔---------------------------------------------------------已规范化
 	public function delete_group($group_id){
@@ -399,29 +407,28 @@ class db{
 		if(!$this->has_group($group_id))
 			$err[$i++]="线路不存在或已删除";
 		else{
-			$query="DELETE FROM groups WHERE group_id=".$group_id;
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="DELETE FROM groups WHERE group_id=".$group_id;
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("删除杆塔失败，请稍后再试");
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//是否存在杆塔-------------------------已规范化
 	protected function has_group($group_id){
-		$query="SELECT group_id FROM groups WHERE group_id=".$group_id;
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT group_id FROM groups WHERE group_id=".$group_id;
+		$rows=$this->get_rows();
 		if(!$rows||sizeof($rows)<1)
 			return false;
 		return true;
 	}
 	//根据杆塔位置和名字确定杆塔id，不存在则返回0--------------------------------已规范化
-	protected function get_group_id($group_name,$group_loc){
-		$query="SELECT group_id FROM groups WHERE group_name='" . $group_name . "' AND group_loc='" . $group_loc ."'";
-		$rows=$this->get_rows($query);
+	public function get_group_id($group_name,$group_loc){
+		$this->queries="SELECT group_id FROM groups WHERE group_name='" . $group_name . "' AND group_loc='" . $group_loc ."'";
+		$rows=$this->get_rows();
 		if($rows&&sizeof($rows)>0)
 			return $rows[0]['group_id'];
 		return 0;
@@ -429,8 +436,8 @@ class db{
 	//获取单个杆塔信息,已组合相关线路信息------------------------------------------已规范化
 	//若无此杆塔则返回null
 	public function get_group($group_id){
-		$query="SELECT * FROM groups WHERE group_id=".$group_id;
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT * FROM groups WHERE group_id=".$group_id;
+		$rows=$this->get_rows();
 		if(!$rows||sizeof($rows)<1)
 			return null;
 		$rows[0]['line_name']=$this->get_real_line_name($rows[0]['line_id']);
@@ -447,8 +454,8 @@ class db{
 	}
 	//返回所有杆塔信息数组
 	public function get_all_groups(){
-		$query="SELECT * FROM groups ORDER BY group_loc";
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT * FROM groups ORDER BY group_loc";
+		$rows=$this->get_rows();
 		$linesarr=$this->get_all_lines_info_index_id();
 		$devnumsarr=$this->get_all_devs_num_index_line_id_gro_id_dev_phase();
 		$linesarr[0]['line_name']='未绑定';
@@ -471,8 +478,8 @@ class db{
 
 	//返回某杆塔绑定的所有线路数组
 	public function get_lines_vi_gid($group_id){
-		$query="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
-		return $this->get_rows($query);
+		$this->queries="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
+		return $this->get_rows();
 	}
 	public function add_group_vi_line_name($group_name,$group_loc,$line_name=null,$line_name2=null,$coor_long,$coor_lat){
 		
@@ -483,17 +490,17 @@ class db{
 	}
 	//数组下标存数杆塔id，相应值为数组的所有信息
 	public function get_all_groups_info_index_id(){
-		$query="SELECT * FROM groups";
+		$this->queries="SELECT * FROM groups";
 		$rows=null;
 		if($this->is_use_mysqli){
-			$result=mysqli_query($this->dbcon,$query);
+			$result=mysqli_query($this->dbcon,$this->queries);
 			if(!$result)
 				return null;		
 			while($row=mysqli_fetch_array($result))
 				$rows[$row['group_id']]=$row;
 		}
 		else{
-			$result=mysql_query($query,$this->dbcon);
+			$result=mysql_query($this->queries,$this->dbcon);
 			if(!$result)
 				return null;
 			while($row=mysql_fetch_array($result))
@@ -505,8 +512,8 @@ class db{
 	//获取单个线路信息------------------------------------------已规范化
 	//若无此线路则返回null
 	public function get_line($line_id){
-		$query="SELECT * FROM liness WHERE line_id=".$line_id;
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT * FROM liness WHERE line_id=".$line_id;
+		$rows=$this->get_rows();
 		if(!$rows||sizeof($rows)<1)
 			return null;
 		return $rows[0];
@@ -523,8 +530,8 @@ class db{
 	}
 	//获取一个数组，数组下标为线路id，相应值为绑定杆塔的字符串
 	public function get_arr_groups_on_line(){
-		$query="SELECT groups.group_name,groups.group_loc,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
-		$results=$this->get_rows($query);
+		$this->queries="SELECT groups.group_name,groups.group_loc,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
+		$results=$this->get_rows();
 		if(!$results)
 			return null;
 		foreach ($results as $result) {
@@ -536,28 +543,28 @@ class db{
 	}
 	//指定杆塔是否绑定了指定线路-------------------------------已规范化
 	public function is_group_has_line($group_id,$line_id){
-		$query="SELECT group_id FROM groups WHERE group_id=".$group_id." AND (line_id=".$line_id." OR line_id2=".$line_id.")";
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT group_id FROM groups WHERE group_id=".$group_id." AND (line_id=".$line_id." OR line_id2=".$line_id.")";
+		$rows=$this->get_rows();
 		if($rows&&count($rows)>0)
 			return true;
 		return false;
 	}
 	public function get_all_lines(){
-		$query="SELECT * FROM liness";
-		return $this->get_rows($query);
+		$this->queries="SELECT * FROM liness";
+		return $this->get_rows();
 	}
 	public function get_all_lines_info_index_id(){
-		$query="SELECT * FROM liness";
+		$this->queries="SELECT * FROM liness";
 		$rows=null;
 		if($this->is_use_mysqli){
-			$result=mysqli_query($this->dbcon,$query);
+			$result=mysqli_query($this->dbcon,$this->queries);
 			if(!$result)
 				return null;
 			while($row=mysqli_fetch_array($result))
 				$rows[$row['line_id']]=$row;
 		}
 		else{
-			$result=mysql_query($query,$this->dbcon);
+			$result=mysql_query($this->queries,$this->dbcon);
 			if(!$result)
 				return null;
 			while($row=mysql_fetch_array($result))
@@ -577,17 +584,15 @@ class db{
 		if($this->get_line_id_vi_name($line_name))
 			$err[$i++]="添加失败，已有相同名字的线路";
 		if($i==0){
-			$query="INSERT INTO `liness`(`line_name`) VALUES ('".$line_name."')";
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="INSERT INTO `liness`(`line_name`) VALUES ('".$line_name."')";
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("添加线路失败");
+			else
+				return true;
 		}
-
-		$res=array('err_count'=>$i,'err'=>$err);
-		return $res;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	public function update_line($line_id,$line_new_name){
 		$err=null;
@@ -597,16 +602,15 @@ class db{
 		if($this->get_line_id_vi_name($line_new_name))
 			$err[$i++]="修改线路名失败，已有相同名字的线路";
 		if($i==0){
-			$query="UPDATE `liness` SET line_name='".$line_new_name."' WHERE line_id=".$line_id;
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="UPDATE `liness` SET line_name='".$line_new_name."' WHERE line_id=".$line_id;
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("修改线路失败");
+			else
+				return true;
 		}
-		$res=array('err_count'=>$i,'err'=>$err);
-		return $res;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//删除线路----------------------------------------已规范化
 	public function delete_line($line_id){
@@ -615,72 +619,136 @@ class db{
 		if(!$this->has_line($line_id))
 			$err[$i++]="线路不存在或已删除";
 		else{
-			$query="DELETE FROM liness WHERE line_id=".$line_id;
-			if($this->is_use_mysqli)
-				$result=mysqli_query($this->dbcon,$query);
-			else 
-				$result=mysql_query($query,$this->dbcon);
+			$this->queries="DELETE FROM liness WHERE line_id=".$line_id;
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("删除线路失败，请稍后再试");
+			else
+				return true;
 		}
-		$errinfo=array('err_count'=>$i,'err'=>$err);
-		return $errinfo;
+		$this->set_errors($i,$err);
+		return false;
 	}
 	//是否存在某个线路--------------------------已规范化
 	protected function has_line($line_id){
-		$query="SELECT `line_id` FROM `liness` WHERE `line_id`=".$line_id;
-		$rows=$this->get_rows($query);
+		$this->queries="SELECT `line_id` FROM `liness` WHERE `line_id`=".$line_id;
+		$rows=$this->get_rows();
 		if($rows&&sizeof($rows)>0)
 			return true;
 		return false;
 	}
 	public function get_line_id_vi_name($line_name){
-		$query="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
-		$result=$this->get_rows($query);
+		$this->queries="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
+		$result=$this->get_rows();
 		if($result)
 			return $result[0]['line_id'];
 		return 0;
 	}
 	protected function get_group_name_vi_id($group_id){
-		$query="SELECT group_name FROM groups WHERE group_id=" . $group_id;
-		$result=$this->get_rows($query);
+		$this->queries="SELECT group_name FROM groups WHERE group_id=" . $group_id;
+		$result=$this->get_rows();
 		if($result)
 			return $result[0]['group_name'];
 		return false;
 	}
 	protected function get_line_name_vi_id($line_id){
-		$query="SELECT line_name FROM `liness` WHERE `line_id`=" . $line_id;
-		$result=$this->get_rows($query);
+		$this->queries="SELECT line_name FROM `liness` WHERE `line_id`=" . $line_id;
+		$result=$this->get_rows();
 
 		if($result)
 			return $result[0]['line_name'];
 		return false;
 	}
 
-	public function get_user_id_vie_pwd($user_name,$passwd){
+	/*******************************************
+	 *USERS
+	 *user_role 1超级管理员 3设备管理员 5普通用户
+	 ******************************************/
+	/*
+	 *添加用户
+	 *返回值：true，添加成功；false，添加失败
+	 */
+	public function add_user($user_name,$passwd,$user_role=5,$user_phone=0,$user_email=null,$is_send=0){
+		$err=null;
+		$i=0;
 		$passwdd=md5($passwd);
-		$query="SELECT user_id FROM users WHERE user_name='" . $user_name . "' AND passwd='" . $passwdd ."'";
-		if($this->is_use_mysqli)
-			$row=mysqli_fetch_array(mysqli_query($this->dbcon,$query));
-		else
-			$row=mysql_fetch_array(mysql_query($query,$this->dbcon));
-		return $row['user_id'];
-		
-	}
-	public function add_user($user_name,$passwd,$user_role=10,$register_time=null){
+		if ($this->has_user_name($user_name))
+			$err[$i++]=("用户名已存在");
+		if($i==0){
+			$register_time=$last_login_time=time();
+			$this->queries="INSERT INTO users(user_name,passwd,user_role,user_phone,user_email,is_send,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."',".$user_role.",'".$user_phone."','".$user_email."',".$is_send.",".$last_login_time.",".$register_time.")";
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]=("添加用户失败，请联系管理员");
+			else
+				return true;
+		}
+		$this->set_errors($i,$err);
+		return false;	
+	}	
+	/*
+	 *编辑用户
+	 *返回值：true，编辑成功；false，编辑失败
+	 */
+	public function update_user($user_id,$user_name,$passwd,$user_role,$user_phone,$user_email,$is_send){
+		$err=null;
+		$i=0;
 		$passwdd=md5($passwd);
-		if ($this->get_user_id_vie_pwd($user_name, $passwd))
-			die("用户名已存在");
-		$last_login_time=time();
-		$register_time=$register_time?$register_time:time();
-		$query="INSERT INTO users(user_name,passwd,user_role,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."','".$user_role."','".$last_login_time."','".$register_time."')";
-		echo $query;
-		if($this->is_use_mysqli)
-			$result=mysqli_query($this->dbcon,$query);
-		else
-			$result=mysql_query($query,$this->dbcon);
-		if(!$result)
-			die("添加用户失败");
+		if ($this->has_user_name($user_name))
+			$err[$i++]=("用户名已存在");
+		if($i==0){
+			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send="$is_send" WHERE user_id=".$user_id;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]=("修改用户失败，请联系管理员");
+			else
+				return true;
+		}
+		$this->set_errors($i,$err);
+		return false;	
 	}
+	public function delete_user($user_id){
+		$err=null;
+		$i=0;
+		if(!has_user($user_id))
+			$err[$i++]="用户不存在或已删除";
+		if($user_id==1)
+			$err[$i++]="权限不足，此用户无法删除";
+		if($i==0){
+			$this->queries="DELETE FROM users WHERE user_id=".$user_id;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]=("删除用户失败，请联系管理员");
+			else
+				return true;
+		}		
+		$this->set_errors($i,$err);
+		return false;
+	}
+	//是否存在某用户ID
+	protected function has_user($user_id){
+		if($this->get_user($user_id)==null)
+			return false;
+		return true;
+	} 
+	//是否存在某用户名
+	protected function has_user_name($user_name){
+		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_id."'";
+		$rows=$this->get_rows();
+		if($rows!=null)
+			return $rows['user_id'];
+		return false;
+	}
+	//更新用户最后登陆时间
+	public function update_user_last_login_time($user_id){}
+	public function get_user($user_id){
+		$this->queries="SELECT * FROM users WHERE user_id=".$user_id;
+		$rows=$this->get_rows();
+		if($rows!=null)
+			return $rows[0];
+		return null;
+
+	}
+	public function get_all_users(){}
 }
 ?>

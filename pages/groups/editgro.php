@@ -9,7 +9,7 @@ $group=$mydb->get_group($_GET['groid']);
 	<?php 
 	if($group!=null){ 
 	?>
-		<form class="form-horizontal form-editgro">
+		<form class="form-horizontal form-newgro form-editgro">
 			<div class="form-group">
 				<label for="inputGroName" class="col-sm-3 control-label">杆塔名</label>
 				<div class="col-sm-6">

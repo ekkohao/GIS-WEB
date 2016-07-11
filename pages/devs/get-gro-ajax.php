@@ -4,14 +4,9 @@ if(!defined('ABSPATH'))
 require ABSPATH.'/setting.php';
 header("Content-type:application/json; charset=UTF-8");
 global $mydb;
-$group_id = htmlspecialchars($_POST['gId']);
-$lines=$mydb->get_lines_vi_gid($group_id);
-if($lines&&count($lines)>0){
-	$stat=count($lines);
-}
-else 
-	$stat=0;
-$data=array('stat'=>$stat,'data'=>$lines);
+$group_id = htmlspecialchars($_POST['gro_id']);
+$group=$mydb->get_group($group_id); 
+$data=array('stat'=>0,'data'=>$group);
 $json=json_encode($data);
 echo $json;
 ?>

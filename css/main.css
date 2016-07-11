@@ -14,6 +14,9 @@ body a{
 body a:focus {
     outline: none;
 }
+.tohide{
+    display: none;
+}
 
 /*==table.striped=========== */
 table.striped{
@@ -132,7 +135,7 @@ table.table > tfoot > tr > th{
 	font-size: 18px;
 	margin-left:-15px;
 	margin-bottom:0;
-	padding:0;
+	padding:10px 0 0 0;
 	color:#fff;
 }
 .site-navbar li{
@@ -240,6 +243,22 @@ table.table > tfoot > tr > th{
 .widget dl{
     margin-top:15px;
     font-size:16px
+}
+.widget-click h3{
+    cursor: pointer;
+}
+.widget-click h3:hover{
+    background-color: #eee;
+}
+.widget-hidden .widget-to-hidden{
+    display: none;
+} 
+.widget-click.widget-hidden h3 i.fa-chevron-down{
+    transform:rotate(90deg);
+    -ms-transform:rotate(90deg);     /* IE 9 */
+    -moz-transform:rotate(90deg);    /* Firefox */
+    -webkit-transform:rotate(90deg); /* Safari 和 Chrome */
+    -o-transform:rotate(90deg); 
 }
 /*.widget dl dt{
     color:#3ba0ea
