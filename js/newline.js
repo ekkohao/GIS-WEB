@@ -19,7 +19,7 @@ $(document).ready(function(){
 		$('.form-addline span.error').html("");
 	});
 	//编辑
-	$('.table-line tbody span.edit').click(function(e){
+	$('.table-line tbody').on('click','span.edit',function(e){
 		changeTr=$(this).parents('tr:first');
 		mode=1;
 		line_id=changeTr.find('td:first input').val();
@@ -31,7 +31,7 @@ $(document).ready(function(){
 		$('.form-addline span.error').html("");
 	});
 	//删除
-	$('.table-line tbody span.delete').click(function(e){
+	$('.table-line tbody span.delete').on('click','span.edit',function(e){
 		changeTr=$(this).parents('tr:first');
 		mode=2;
 		$('.msgbox span.msg-line-name').html(changeTr.find('td:eq(1) strong').html());
@@ -62,15 +62,15 @@ $(document).ready(function(){
 		        //beforeSend: LoadFunction, //加载执行方法    
 		        //error: errorFunction,  //错误执行方法    
 		        success: function (t) {
-		        	if(t.stat==0){
+		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
 		        		$('.msgbox .success-msg').html("删除成功");
 		        		changeTr.remove();
 		        		return;
 		        	}
 		        	else {
 		        		$('.msgbox .error-msg').html("");
-		        		for(var i=0;i<t.stat;i++){
-		        			$('.msgbox .error-msg').append(t.data[i]+'<br />');
+		        		for(var i=0;i<t.errorsinfo.count;i++){
+		        			$('.msgbox .error-msg').append(t.errorsinfo.errors[i]+'<br />');
 		        		}
 		        		$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
 		        	}
@@ -125,10 +125,13 @@ $(document).ready(function(){
 		        //beforeSend: LoadFunction, //加载执行方法    
 		        //error: errorFunction,  //错误执行方法    
 		        success: function (t) {
-		        	if(t.stat==0){
+		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
 		        		$('.form-addline .success-msg').html("线路["+line_name+"]"+modeName[mode]+"成功").show();
-		        		if(mode==0)
-		        			$('.table-line tbody').append('<tr><td><input id="cb-select-'+t.line_id+'" type="hidden" value="'+t.line_id+'"><br />&nbsp;</td><td><strong>'+line_name+'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td></td></tr>');
+		        		if(mode==0){
+		        			$('.table-line tbody').append('<tr><td><input id="cb-select-'+t.data['line_id']+'" type="hidden" value="'+t.line_id+'"><br />&nbsp;</td><td><strong>'+line_name+'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td></td></tr>');
+		        			$('html,body').animate({scrollTop:$('.table-line tfoot').offset().top-300}, 400); 
+
+		        		}
 		        		else
 		        			changeTr.find('td:eq(1) strong').html(line_name);
 		        		line_old_name=line_name;
@@ -136,8 +139,8 @@ $(document).ready(function(){
 		        		return;
 		        	}
 		        	else {
-		        		for(var i=0;i<t.stat;i++){
-		        			$('.form-addline .error-msg').append(t.data[i]+'<br />').show();
+		        		for(var i=0;i<t.errorsinfo.count;i++){
+		        			$('.form-addline .error-msg').append(t.errorsinfo.errors[i]+'<br />').show();
 		        		}
 		        	}
 		        	btn.attr('disabled',false);

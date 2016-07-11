@@ -4,22 +4,23 @@ if(!defined('ABSPATH'))
 require ABSPATH.'/setting.php';
 header("Content-type:application/json; charset=UTF-8");
 require_db();
-$line_id=0;
+$data=null;
+$errorsinfo=null;
 if($_POST['mode']==0){//添加
-	$result=$mydb->add_line($_POST['line_name']);
-	if($result['err_count']==0)
-		$line_id=$mydb->get_line_id_vi_name($_POST['line_name']);
-	$data=array('stat'=>$result['err_count'],'data'=>$result['err'],'line_id'=>$line_id);
+	$isadd=$mydb->add_line($_POST['line_name']);
+	$errorsinfo=$mydb->__get('last_errors');
+	if($isadd)
+		$data['line_id']=$mydb->get_line_vi_name($_POST['line_name'])['line_id'];
 }
 elseif($_POST['mode']==1){//修改
-	$result=$mydb->update_line($_POST['line_id'],$_POST['line_name']);
-	$data=array('stat'=>$result['err_count'],'data'=>$result['err']);
+	$mydb->update_line($_POST['line_id'],$_POST['line_name']);
+	$errorsinfo=$mydb->__get('last_errors');
 }
 else{//修改
-	$result=$mydb->delete_line($_POST['line_id']);
-	$data=array('stat'=>$result['err_count'],'data'=>$result['err']);
+	$mydb->delete_line($_POST['line_id']);
+	$errorsinfo=$mydb->__get('last_errors');
 }
-
-$json=json_encode($data);
+$jsonpre=array('data'=>$data,'errorsinfo'=>$errorsinfo);
+$json=json_encode($jsonpre);
 echo $json;
 ?>

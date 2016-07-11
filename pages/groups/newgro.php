@@ -39,8 +39,8 @@
 					?>
 				</select>
 				<label>
-					<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line1"></span>
-					<br />可为空，表示暂不添加线路
+					<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="edit-line tohide" href="javascript:void(0)">编辑此线路</a>
+					<br />可为空，表示暂不添加线路>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line1"></span>
 				</label>
 			</div>
 		</div>
@@ -54,7 +54,8 @@
 					?>
 				</select>
 				<label>
-					可为空，表示暂不添加线路&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line2"></span>
+					<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="edit-line tohide" href="javascript:void(0)">编辑此线路</a>
+					<br />可为空，表示暂不添加线路>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line2"></span>
 					
 				</label>
 			</div>

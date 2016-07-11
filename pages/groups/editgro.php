@@ -34,14 +34,17 @@ $group=$mydb->get_group($_GET['groid']);
 						global $mydb;
 						$lines=$mydb->get_all_lines();
 						$html="";
+						$tohide=" tohide";
 						if($lines&&count($lines)>0){
 							if($group['line_name']=="已删除")
 								$html.='<option value="0">已删除（点击选择线路）</option>';
 							else
 								$html.='<option value="0">空（点击选择线路）</option>';
 							foreach ($lines as $line){
-								if($line['line_id']==$group['line_id'])
+								if($line['line_id']==$group['line_id']){
+									$tohide="";
 									$html.= '<option selected="selected" class="line-'.$line['line_id'].'" value="'.$line['line_id'].'">'.$line['line_name'].'</option>';
+								}
 								else
 									$html.= '<option class="line-'.$line['line_id'].'" value="'.$line['line_id'].'">'.$line['line_name'].'</option>';
 							}
@@ -53,8 +56,8 @@ $group=$mydb->get_group($_GET['groid']);
 						?>
 					</select>
 					<label>
-						<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line1"></span>
-						<br />可为空，表示暂不添加线路
+						<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="edit-line<?php echo $tohide;?>" href="javascript:void(0)">编辑此线路</a>
+					<br />可为空，表示暂不添加线路>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line1"></span>
 					</label>
 				</div>
 			</div>
@@ -65,14 +68,17 @@ $group=$mydb->get_group($_GET['groid']);
 						
 						<?php 
 						$html="";
+						$tohide=" tohide";
 						if($lines&&count($lines)>0){
 							if($group['line_name2']=="已删除")
 								$html.='<option value="0">已删除（点击选择线路）</option>';
 							else
 								$html.='<option value="0">空（点击选择线路）</option>';
 							foreach ($lines as $line){
-								if($line['line_id']==$group['line_id2'])
+								if($line['line_id']==$group['line_id2']){
+									$tohide="";
 									$html.= '<option selected="selected" class="line-'.$line['line_id'].'" value="'.$line['line_id'].'">'.$line['line_name'].'</option>';
+								}
 								else
 									$html.= '<option class="line-'.$line['line_id'].'" value="'.$line['line_id'].'">'.$line['line_name'].'</option>';
 							}
@@ -84,7 +90,8 @@ $group=$mydb->get_group($_GET['groid']);
 						?>
 					</select>
 					<label>
-						可为空，表示暂不添加线路&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line2"></span>
+						<a class="new-line" href="javascript:void(0)">添加新线路</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="edit-line<?php echo $tohide;?>" href="javascript:void(0)">编辑此线路</a>
+					<br />可为空，表示暂不添加线路>&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-line2"></span>
 						
 					</label>
 				</div>

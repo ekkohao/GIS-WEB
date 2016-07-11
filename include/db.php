@@ -223,9 +223,9 @@ class db{
 			}
 		}
 	}
-	protected set_errors($err_count,$err_arr){
+	protected function set_errors($err_count,$err_arr){
 		$this->last_errors['count']=$err_count;
-		$this->last_errors['err_arr']=$err_arr;
+		$this->last_errors['errors']=$err_arr;
 	}
 	/**********************************************
 	 *dev
@@ -263,7 +263,7 @@ class db{
 			$err[$i++]="设备编号为".$o_dev['dev_number']."的设备已存在于此位置（含有相同的杆塔、线路和相位信息）";
 		if($i==0){
 			$this->queries="UPDATE devs SET dev_name='".$dev_number."',dev_phase='".$dev_phase."',group_id=".$group_id.",line_id=".$line_id." WHERE dev_id=".$dev_id;
-			$result-$this->get_result();
+			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改设备信息失败";
 			else
@@ -581,7 +581,7 @@ class db{
 		$i=0;
 		if($line_name==""||!$line_name)
 			$err[$i++]="线路名不能为空";
-		if($this->get_line_id_vi_name($line_name))
+		if($this->get_line_vi_name($line_name))
 			$err[$i++]="添加失败，已有相同名字的线路";
 		if($i==0){
 			$this->queries="INSERT INTO `liness`(`line_name`) VALUES ('".$line_name."')";
@@ -599,7 +599,7 @@ class db{
 		$i=0;
 		if($line_new_name==""||!$line_new_name)
 			$err[$i++]="线路名不能为空";
-		if($this->get_line_id_vi_name($line_new_name))
+		if($this->get_line_vi_name($line_new_name))
 			$err[$i++]="修改线路名失败，已有相同名字的线路";
 		if($i==0){
 			$this->queries="UPDATE `liness` SET line_name='".$line_new_name."' WHERE line_id=".$line_id;
@@ -637,11 +637,11 @@ class db{
 			return true;
 		return false;
 	}
-	public function get_line_id_vi_name($line_name){
+	public function get_line_vi_name($line_name){
 		$this->queries="SELECT `line_id` FROM `liness` WHERE `line_name`='" . $line_name . "'";
 		$result=$this->get_rows();
 		if($result)
-			return $result[0]['line_id'];
+			return $result[0];
 		return 0;
 	}
 	protected function get_group_name_vi_id($group_id){
@@ -697,7 +697,7 @@ class db{
 		if ($this->has_user_name($user_name))
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send="$is_send" WHERE user_id=".$user_id;
+			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("修改用户失败，请联系管理员");
@@ -727,7 +727,9 @@ class db{
 	}
 	//是否存在某用户ID
 	protected function has_user($user_id){
-		if($this->get_user($user_id)==null)
+		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_id."'";
+		$result=$this->get_result();
+		if(!$result)
 			return false;
 		return true;
 	} 
@@ -739,8 +741,21 @@ class db{
 			return $rows['user_id'];
 		return false;
 	}
+	public function get_user_vi_name_pwd($user_name,$passwd){
+		$passwdd=md5($passwd);
+		$this->queries="SELECT * FROM users WHERE user_name='".$user_name."' AND passwd='".$passwdd."'";
+		$rows=$this->get_rows();
+		if($rows!=null)
+			return $rows[0];
+		return null;
+	}
 	//更新用户最后登陆时间
-	public function update_user_last_login_time($user_id){}
+	public function update_user_last_login_time($user_id){
+		$time=time();
+		$this->queries="UPDATE users(last_login_time) VALUES(".$time.")";
+		$result=$this->get_result();
+		return $result;
+	}
 	public function get_user($user_id){
 		$this->queries="SELECT * FROM users WHERE user_id=".$user_id;
 		$rows=$this->get_rows();
@@ -749,6 +764,12 @@ class db{
 		return null;
 
 	}
-	public function get_all_users(){}
+	public function get_all_users(){
+		$this->queries="SELECT * FROM users WHERE user_id<>1";
+		$rows=$this->get_rows();
+		if(!$rows)
+			return null;
+		return $rows;
+	}
 }
 ?>

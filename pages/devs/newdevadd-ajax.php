@@ -4,13 +4,20 @@ if(!defined('ABSPATH'))
 require ABSPATH.'/setting.php';
 header("Content-type:application/json; charset=UTF-8");
 require_db();
-if($_POST['mode']==1)
-	$result=$mydb->update_dev($_POST['dev_id'],$_POST['dev_num'],$_POST['dev_phase'],$_POST['group_id'],$_POST['line_id']);
+
+//$data=null;
+$errorsinfo=null;
+
+if($_POST['mode']==0)
+	$mydb->add_dev($_POST['dev_num'],$_POST['dev_phase'],$_POST['group_id'],$_POST['line_id']);
+elseif($_POST['mode']==1)
+	$mydb->update_dev($_POST['dev_id'],$_POST['dev_num'],$_POST['dev_phase'],$_POST['group_id'],$_POST['line_id']);
 elseif($_POST['mode']==2)
-	$result=$mydb->delete_dev($_POST['dev_id']);
-else
-	$result=$mydb->add_dev($_POST['dev_num'],$_POST['dev_phase'],$_POST['group_id'],$_POST['line_id']);
-$data=array('stat'=>$result['err_count'],'data'=>$result['err']);
-$json=json_encode($data);
+	$mydb->delete_dev($_POST['dev_id']);
+
+$errorsinfo=$mydb->__get('last_errors');
+
+$jsonpre=array('errorsinfo'=>$errorsinfo);
+$json=json_encode($jsonpre);
 echo $json;
 ?>
