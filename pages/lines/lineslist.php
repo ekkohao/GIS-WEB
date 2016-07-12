@@ -1,11 +1,16 @@
-<div class="btn-group">
-	<button class="btn btn-primary btn-topopaddline">新增线路</button>
-</div>
+
+
 <?php 
-require_db();
 global $mydb;
 $lines=$mydb->get_all_lines();
 $gros=$mydb->get_arr_groups_on_line();
+if(is_current_user_can_see(3)){
+?>
+	<div class="btn-group">
+		<button class="btn btn-primary btn-topopaddline">新增线路</button>
+	</div>
+<?php
+}
 if($lines&&count($lines)>0){
 ?>
 	<table class="table striped table-line">
@@ -19,9 +24,13 @@ if($lines&&count($lines)>0){
 				$allgros="";
 			else
 				$allgros=substr($gros[$line['line_id']],0,strlen('，')*(-1));
-		
-			echo '<tr><td><input id="cb-select-'.$line['line_id'].'" type="hidden" value="'.$line['line_id'].'"><br />&nbsp;</td><td><strong>'.$line['line_name'].'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td>'.$allgros.'</td></tr>';
-		}
+				$html='';
+				$html.= '<tr><td><input id="cb-select-'.$line['line_id'].'" type="hidden" value="'.$line['line_id'].'"><br />&nbsp;</td><td><strong>'.$line['line_name'].'</strong>';
+				if(is_current_user_can_see(3))
+					$html.='<div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div>';
+				$html.='</td><td>'.$allgros.'</td></tr>';
+				echo $html;
+			}
 		?>
 		</tbody>
 		<tfoot><tr>
@@ -32,16 +41,20 @@ if($lines&&count($lines)>0){
 }
 else{
 ?>
-	<h3>线路列表为空</h3>
+	<div class="widget">
+		<h3>NOT FOUND</h3>
+		<p><h2>&nbsp;&nbsp;线路列表为空</h2></p>
+	</div>
 <?php 
 }
+if(is_current_user_can_see(3)){
 ?>
 <div class="pop-box pop-addline">
 	<form class="form-horizontal form-addline">
 		<div class="remove-x"><i class="fa fa-remove"></i></div>
 		<h3 class="center-block">添加新线路</h3>
 		<div class="form-group">
-			<label for="inputLineName" class="col-sm-3 control-label">线路名</label>
+			<label for="inputLineName" class="col-sm-3 control-label input-required">线路名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputLineName"
 					placeholder="线路名" required="required">
@@ -72,3 +85,6 @@ else{
 	</div>
 </div>
 <script type="text/javascript" src="js/newline.js"></script>
+<?php
+}
+?>

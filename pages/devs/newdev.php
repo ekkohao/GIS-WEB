@@ -1,8 +1,11 @@
+<?php
+	current_user_role_identify(3);
+?>
 <div class="widget">
 	<h3>添加新设备</h3>
 	<form class="form-horizontal form-newdev">
 		<div class="form-group">
-			<label for="inputDevNum" class="col-sm-3 control-label">设备编号</label>
+			<label for="inputDevNum" class="col-sm-3 control-label input-required">设备编号</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputDevNum"
 					placeholder="设备编号" required="required">
@@ -10,7 +13,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="selectDevPhase" class="col-sm-3 control-label">设备相位</label>
+			<label for="selectDevPhase" class="col-sm-3 control-label input-required">设备相位</label>
 			<div class="col-sm-6">
 				<select class="form-control" id="selectDevPhase">
 					<option selected="selected" value="0">选择相位</option>
@@ -22,7 +25,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="selectGroup" class="col-sm-3 control-label">所属杆塔</label>
+			<label for="selectGroup" class="col-sm-3 control-label input-required">所属杆塔</label>
 			<div class="col-sm-6">
 				<select class="form-control" id="selectGroup">
 					
@@ -49,7 +52,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="selectLine" class="col-sm-3 control-label">所在线路</label>
+			<label for="selectLine" class="col-sm-3 control-label input-required">所在线路</label>
 			<div class="col-sm-6">
 				<select class="form-control" id="selectLine" disabled="disabled">
 					<option selected="selected" value="0">请先选择杆塔</option>
@@ -70,7 +73,7 @@
 	<h3><span>添加新杆塔</span><i class="fa fa-chevron-down pull-right" aria-hidden="true"></i></h3>
 	<form class="form-horizontal form-newgro widget-to-hidden">
 		<div class="form-group">
-			<label for="inputGroName" class="col-sm-3 control-label">杆塔名</label>
+			<label for="inputGroName" class="col-sm-3 control-label input-required">杆塔名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputGroName"
 					placeholder="杆塔名" required="required">
@@ -78,7 +81,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="inputGroLoc" class="col-sm-3 control-label">杆塔地址</label>
+			<label for="inputGroLoc" class="col-sm-3 control-label input-required">杆塔地址</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputGroLoc" placeholder="杆塔地址" required="required">
 				<label>杆塔地址长度在30个字符以内&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-groloc"></span></label>
@@ -128,7 +131,7 @@
 			</div>
 		</div>
 				<div class="form-group">
-			<label for="inputCoor" class="col-sm-3 control-label">杆塔坐标</label>
+			<label for="inputCoor" class="col-sm-3 control-label input-required">杆塔坐标</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputCoor" placeholder="12.3456,12.3456" required="required">
 				<label>
@@ -153,7 +156,7 @@
 		<div class="remove-x"><i class="fa fa-remove"></i></div>
 		<h3 class="center-block">添加新线路</h3>
 		<div class="form-group">
-			<label for="inputLineName" class="col-sm-3 control-label">线路名</label>
+			<label for="inputLineName" class="col-sm-3 control-label input-required">线路名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputLineName"
 					placeholder="线路名" required="required">

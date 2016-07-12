@@ -1,8 +1,11 @@
+<?php
+	current_user_role_identify(3);
+?>
 <div class="widget">
 	<h3>添加新杆塔</h3>
 	<form class="form-horizontal form-newgro">
 		<div class="form-group">
-			<label for="inputGroName" class="col-sm-3 control-label">杆塔名</label>
+			<label for="inputGroName" class="col-sm-3 control-label input-required">杆塔名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputGroName"
 					placeholder="杆塔名" required="required">
@@ -10,7 +13,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="inputGroLoc" class="col-sm-3 control-label">杆塔地址</label>
+			<label for="inputGroLoc" class="col-sm-3 control-label input-required">杆塔地址</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputGroLoc" placeholder="杆塔地址" required="required">
 				<label>杆塔地址长度在30个字符以内&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-groloc"></span></label>
@@ -61,7 +64,7 @@
 			</div>
 		</div>
 				<div class="form-group">
-			<label for="inputCoor" class="col-sm-3 control-label">杆塔坐标</label>
+			<label for="inputCoor" class="col-sm-3 control-label input-required">杆塔坐标</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputCoor" placeholder="12.3456,12.3456" required="required">
 				<label>
@@ -86,7 +89,7 @@
 		<div class="remove-x"><i class="fa fa-remove"></i></div>
 		<h3 class="center-block">添加新线路</h3>
 		<div class="form-group">
-			<label for="inputLineName" class="col-sm-3 control-label">线路名</label>
+			<label for="inputLineName" class="col-sm-3 control-label input-required">线路名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputLineName"
 					placeholder="线路名" required="required">

@@ -1,10 +1,34 @@
 <?php
 function require_db() {
 	global $mydb;
-	require_once( ABSPATH . '/include/db.php' );
 	if ( isset( $mydb ) )
 		return;
 	$mydb = new db();
+}
+//载入当前用户变量
+function load_current_user(){
+	global $__USER,$mydb;
+	if (!isset($_SESSION)) {
+		session_start();
+	}
+	if ( isset( $__USER ) )
+		return;	
+	if(isset($_SESSION['user_id']))
+		$__USER = $mydb->get_user($_SESSION['user_id']);
+}
+function is_current_user_can_see($role){
+	global $__USER;
+	if($__USER['user_role']>$role)
+		return false;
+	return true;
+}
+function current_user_role_identify($role){
+	global $__USER;
+	if($__USER['user_role']>$role){
+		hao_redirect("index.php?page=home",404);
+		exit();
+	}
+	return;
 }
 //加载footer.php
 function get_footer($file=null){

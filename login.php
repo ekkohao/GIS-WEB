@@ -1,17 +1,26 @@
 <?php 
 require 'setting.php';
 session_init_and_redirect(false);
+$errmsg='';
 if(!isset($_GET['action'])){
 	if(isset($_SESSION['user_id']))
 		hao_redirect(SITE_URL."/index.php");
-}elseif($_GET['action'] == "logout"){
-		unset($_SESSION['user_id']);
-		echo '注销登录成功！';
-}elseif($_GET['action'] == "login"){
+}
+elseif($_GET['action'] == "logout"){
+		if(isset($_SESSION['user_id'])){
+			unset($_SESSION['user_id']);
+			$errmsg = '注销登录成功！';
+		}
+		else
+			$errmsg = '尚未登陆，无法注销！';
+		
+}
+elseif($_GET['action'] == "login"){
 	if(!isset($_POST['username'])||!isset($_POST['passwd'])||!trim($_POST['username'])||!trim($_POST['passwd'])){
-		echo "用户名或密码不能为空";
+		$errmsg =  "用户名或密码不能为空";
 
-	}else{
+	}
+	else{
 		require_db();
 		$user_name = htmlspecialchars(trim($_POST['username']));
 		$passwd = htmlspecialchars(trim(($_POST['passwd'])));
@@ -20,8 +29,9 @@ if(!isset($_GET['action'])){
 			$_SESSION['user_id']=$user_id;
 			hao_redirect(SITE_URL."/index.php");
 			exit();
-		}else
-			echo "用户名或密码错误"; 
+		}
+		else
+			$errmsg =  "用户名或密码错误"; 
 	}
 }
 
@@ -76,6 +86,7 @@ if(!isset($_GET['action'])){
 					<div class="form-group">
 						<div class="col-sm-offset-2 col-sm-10">
 							<button type="submit" class="btn btn-default">登陆</button>
+							<label><span class="error error-msg"><?php echo $errmsg;?></span></label>
 						</div>
 					</div>
 				</form>

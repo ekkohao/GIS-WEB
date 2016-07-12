@@ -1,3 +1,6 @@
+<?php
+	current_user_role_identify(2);
+?>
 <!DOCTYPE HTML>
 <html lang="zh_CN">
 	<head>
@@ -15,12 +18,15 @@
 	
 	    <div id="bodier" class="">
 	        <div class="container">
-				<h1>这里是用户管理</h1>
-
+				<?php 
+				$actions=array("userslist","newuser","edituser");
+				hao_load_in('action',$actions,'pages/users');
+				?>
 			</div>
 	    </div>
-	
+		
 		<?php get_footer();?>
+	
     
 	</body>
 </html>

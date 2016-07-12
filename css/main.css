@@ -17,6 +17,16 @@ body a:focus {
 .tohide{
     display: none;
 }
+label.input-required::after{
+    display: block;
+    width:0px;
+    overflow-x: visible;
+    content: "*";
+    float:right;
+    color:red;
+    font-size: 18px;
+
+}
 
 /*==table.striped=========== */
 table.striped{
@@ -111,6 +121,13 @@ table.table > thead > tr > th.select{
 table.table > tfoot > tr > th{
 	border-top: 1px solid #e5e5e5;
 }
+table.table-userlist>tbody .issend{
+    color:green;
+}
+table.table-userlist>tbody .notsend{
+    color:red;
+}
+
 /**
  *hearder
  */
@@ -129,7 +146,72 @@ table.table > tfoot > tr > th{
     font-weight:400;
     text-align:center;
     }
+#header nav{
+    width:100%;
+    padding-right:118px;
+
+}    
+#header .login-info-bar {
+    width:118px;
+    margin-left:-118px;
+    margin-top:28px;
+    cursor:pointer;
+    position: relative;
+    height:20px;
+}
+#header .login-info-bar i.fa {
+    width:14px;
+}
+#header .login-info-bar i.fa:first-child {
+    font-size:16px;
+    line-height: 16px;
+    color:#4C9ED9;
+}
+#header .login-info-bar i.fa:nth-last-child(1) {
+    font-size:12px;
+    line-height: 16px;
+    color:#eee;
+}
+#header .login-info-bar span {
+    line-height: 16px;
+    font-size:16px;
+    color:#4C9ED9;
+    max-width:90px;
+    display:inline-block;
+    padding-right:5px;
+}
+#header .login-info-bar ul.submenu{
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #fff;
+    font-size: 12px;
+    padding: 0px 6px;
+    border: 1px solid #ddd;
+    line-height: 32px;
+    min-width: 88px;
+    font-weight: bold;
+    border-radius: 3px;
+}
+#header .login-info-bar ul.submenu li{
+    float: none;
+}
+#header .login-info-bar ul.submenu a{
+    display: inline-block;
+    width: 100%;
+}
+#header .login-info-bar ul.submenu a:hover{
+    color: #4C9ED9;
+}
+#header .login-info-bar:hover ul{
+    display: block;
+}
+
+
+
  /* site-navbar ======================================================================================================== */
+
 
 .site-navbar{
 	font-size: 18px;
@@ -188,7 +270,7 @@ table.table > tfoot > tr > th{
 .widget form{
 	padding:30px 10px 20px;
 }
-.widget form .form-group > div > label,.pop-box form .form-group > div > label{
+.widget form .form-group > div > label,.pop-box form .form-group > div > label,.form-login .form-group > div > label {
 	padding-top:5px;
 	padding-bottom:5px;
 	font-size:12px;
@@ -198,13 +280,13 @@ table.table > tfoot > tr > th{
     min-width:10px;
     min-height: 27px;
 }
-.widget form span.error,.pop-box form span.error,.pop-box .msgbox span.error{
+.widget form span.error,.pop-box form span.error,.pop-box .msgbox span.error,.form-login span.error{
     color:red;
 }
 .widget form span.error.success-msg,.pop-box form span.error.success-msg,.pop-box .msgbox span.success-msg{
     color:green;
 }
-.widget h3 {
+.widget > h3 {
     font-size: 18px;
     color: #666;
     border-bottom: 1px solid #eaeaea;
@@ -213,11 +295,11 @@ table.table > tfoot > tr > th{
     padding: 11px 15px 10px;
     position:relative;
 }
-.widget h3 i{
+.widget > h3 i{
     margin-right:8px;
     color:#3ba0ea;
 }
-.widget h3 .info-box,.form-group .info-box{
+.widget > h3 .info-box,.form-group .info-box{
     position:absolute;
     padding:8px;
     color:#fff;
@@ -244,10 +326,10 @@ table.table > tfoot > tr > th{
     margin-top:15px;
     font-size:16px
 }
-.widget-click h3{
+.widget-click > h3{
     cursor: pointer;
 }
-.widget-click h3:hover{
+.widget-click > h3:hover{
     background-color: #eee;
 }
 .widget-hidden .widget-to-hidden{
@@ -300,7 +382,7 @@ table.table > tfoot > tr > th{
     height:260px;
 }
 /*删除线路确认框*/
-.pop-delline .msgbox,.pop-delgro .msgbox,.pop-deldev .msgbox{
+.pop-delline .msgbox,.pop-delgro .msgbox,.pop-deldev .msgbox,.pop-deluser .msgbox{
     text-align:center;
     position: absolute;
     margin: auto;

@@ -1,4 +1,5 @@
 <?php
+current_user_role_identify(3);
 if(!isset($_GET['groid']))
 	hao_redirect("index.php?page=groups&action=groupslist");
 global $mydb;
@@ -11,7 +12,7 @@ $group=$mydb->get_group($_GET['groid']);
 	?>
 		<form class="form-horizontal form-newgro form-editgro">
 			<div class="form-group">
-				<label for="inputGroName" class="col-sm-3 control-label">杆塔名</label>
+				<label for="inputGroName" class="col-sm-3 control-label input-required">杆塔名</label>
 				<div class="col-sm-6">
 					<input type="text" class="form-control" id="inputGroName"
 						placeholder="杆塔名" required="required" value="<?php echo $group['group_name']; ?>">
@@ -19,7 +20,7 @@ $group=$mydb->get_group($_GET['groid']);
 				</div>
 			</div>
 			<div class="form-group">
-				<label for="inputGroLoc" class="col-sm-3 control-label">杆塔地址</label>
+				<label for="inputGroLoc" class="col-sm-3 control-label input-required">杆塔地址</label>
 				<div class="col-sm-6">
 					<input type="text" class="form-control" id="inputGroLoc" placeholder="杆塔地址" required="required" value="<?php echo $group['group_loc']; ?>">
 					<label>杆塔地址长度在30个字符以内&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-groloc"></span></label>
@@ -97,7 +98,7 @@ $group=$mydb->get_group($_GET['groid']);
 				</div>
 			</div>
 					<div class="form-group">
-				<label for="inputCoor" class="col-sm-3 control-label">杆塔坐标</label>
+				<label for="inputCoor" class="col-sm-3 control-label input-required">杆塔坐标</label>
 				<div class="col-sm-6">
 					<input type="text" class="form-control" id="inputCoor" placeholder="例如：12.3456,12.3456" required="required" value="<?php echo $group['coor_long'].','.$group['coor_long']; ?>">
 					<label>
@@ -130,7 +131,7 @@ $group=$mydb->get_group($_GET['groid']);
 		<div class="remove-x"><i class="fa fa-remove"></i></div>
 		<h3 class="center-block">添加新线路</h3>
 		<div class="form-group">
-			<label for="inputLineName" class="col-sm-3 control-label">线路名</label>
+			<label for="inputLineName" class="col-sm-3 control-label input-required">线路名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputLineName"
 					placeholder="线路名" required="required">

@@ -662,7 +662,7 @@ class db{
 
 	/*******************************************
 	 *USERS
-	 *user_role 1超级管理员 3设备管理员 5普通用户
+	 *user_role 1系统管理员  2超级管理员 3设备管理员 5普通用户
 	 ******************************************/
 	/*
 	 *添加用户
@@ -675,8 +675,7 @@ class db{
 		if ($this->has_user_name($user_name))
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$register_time=$last_login_time=time();
-			$this->queries="INSERT INTO users(user_name,passwd,user_role,user_phone,user_email,is_send,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."',".$user_role.",'".$user_phone."','".$user_email."',".$is_send.",".$last_login_time.",".$register_time.")";
+			$this->queries="INSERT INTO users(user_name,passwd,user_role,user_phone,user_email,is_send,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."',".$user_role.",'".$user_phone."','".$user_email."',".$is_send.",NOW(),NOW())";
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("添加用户失败，请联系管理员");
@@ -694,13 +693,30 @@ class db{
 		$err=null;
 		$i=0;
 		$passwdd=md5($passwd);
-		if ($this->has_user_name($user_name))
+		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
 			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
 			$result=$this->get_result();
 			if(!$result)
-				$err[$i++]=("修改用户失败，请联系管理员");
+				$err[$i++]="修改用户失败，请联系管理员";
+			else
+				return true;
+		}
+		$this->set_errors($i,$err);
+		return false;	
+	}
+	public function update_user_nopwd($user_id,$user_name,$user_role,$user_phone,$user_email,$is_send){
+		$err=null;
+		$i=0;
+		$passwdd=md5($passwd);
+		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
+			$err[$i++]=("用户名已存在");
+		if($i==0){
+			$this->queries="UPDATE users SET user_name='".$user_name."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]="修改用户失败，请联系管理员";
 			else
 				return true;
 		}
@@ -710,7 +726,7 @@ class db{
 	public function delete_user($user_id){
 		$err=null;
 		$i=0;
-		if(!has_user($user_id))
+		if(!$this->has_user($user_id))
 			$err[$i++]="用户不存在或已删除";
 		if($user_id==1)
 			$err[$i++]="权限不足，此用户无法删除";
@@ -718,7 +734,7 @@ class db{
 			$this->queries="DELETE FROM users WHERE user_id=".$user_id;
 			$result=$this->get_result();
 			if(!$result)
-				$err[$i++]=("删除用户失败，请联系管理员");
+				$err[$i++]="删除用户失败，请联系管理员";
 			else
 				return true;
 		}		
@@ -735,10 +751,10 @@ class db{
 	} 
 	//是否存在某用户名
 	protected function has_user_name($user_name){
-		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_id."'";
+		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_name."'";
 		$rows=$this->get_rows();
 		if($rows!=null)
-			return $rows['user_id'];
+			return $rows[0]['user_id'];
 		return false;
 	}
 	public function get_user_vi_name_pwd($user_name,$passwd){
@@ -751,13 +767,12 @@ class db{
 	}
 	//更新用户最后登陆时间
 	public function update_user_last_login_time($user_id){
-		$time=time();
-		$this->queries="UPDATE users(last_login_time) VALUES(".$time.")";
+		$this->queries="UPDATE users SET last_login_time=NOW() WHERE user_id=".$user_id;
 		$result=$this->get_result();
 		return $result;
 	}
 	public function get_user($user_id){
-		$this->queries="SELECT * FROM users WHERE user_id=".$user_id;
+		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_id=".$user_id;
 		$rows=$this->get_rows();
 		if($rows!=null)
 			return $rows[0];
@@ -765,7 +780,7 @@ class db{
 
 	}
 	public function get_all_users(){
-		$this->queries="SELECT * FROM users WHERE user_id<>1";
+		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_role<>1 ORDER BY user_role";
 		$rows=$this->get_rows();
 		if(!$rows)
 			return null;
