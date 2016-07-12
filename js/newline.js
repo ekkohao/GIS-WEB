@@ -31,7 +31,7 @@ $(document).ready(function(){
 		$('.form-addline span.error').html("");
 	});
 	//删除
-	$('.table-line tbody span.delete').on('click','span.edit',function(e){
+	$('.table-line tbody').on('click','span.delete',function(e){
 		changeTr=$(this).parents('tr:first');
 		mode=2;
 		$('.msgbox span.msg-line-name').html(changeTr.find('td:eq(1) strong').html());
@@ -128,7 +128,7 @@ $(document).ready(function(){
 		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
 		        		$('.form-addline .success-msg').html("线路["+line_name+"]"+modeName[mode]+"成功").show();
 		        		if(mode==0){
-		        			$('.table-line tbody').append('<tr><td><input id="cb-select-'+t.data['line_id']+'" type="hidden" value="'+t.line_id+'"><br />&nbsp;</td><td><strong>'+line_name+'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td></td></tr>');
+		        			$('.table-line tbody').append('<tr><td><input id="cb-select-'+t.data['line_id']+'" type="hidden" value="'+t.data['line_id']+'"><br />&nbsp;</td><td><strong>'+line_name+'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td></td></tr>');
 		        			$('html,body').animate({scrollTop:$('.table-line tfoot').offset().top-300}, 400); 
 
 		        		}

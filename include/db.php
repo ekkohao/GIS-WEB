@@ -335,13 +335,35 @@ class db{
 		$groupsarr[0]['group_name']='&nbsp;';
 		$rerows=null;
 		$i=0;
-		foreach ($rows as $row) {
-			$rerows[$i]=$row;
-			$rerows[$i]['group_loc']=isset($groupsarr[$row['group_id']]['group_loc'])?$groupsarr[$row['group_id']]['group_loc']:'杆塔已删除';
-			$rerows[$i]['group_name']=isset($groupsarr[$row['group_id']]['group_name'])?$groupsarr[$row['group_id']]['group_name']:'&nbsp;';
-			$rerows[$i++]['line_name']=isset($linesarr[$row['line_id']]['line_name'])?$linesarr[$row['line_id']]['line_name']:'线路已删除';
-		}
+		if($rows)
+			foreach ($rows as $row) {
+				$rerows[$i]=$row;
+				$rerows[$i]['group_loc']=isset($groupsarr[$row['group_id']]['group_loc'])?$groupsarr[$row['group_id']]['group_loc']:'杆塔已删除';
+				$rerows[$i]['group_name']=isset($groupsarr[$row['group_id']]['group_name'])?$groupsarr[$row['group_id']]['group_name']:'&nbsp;';
+				$rerows[$i++]['line_name']=isset($linesarr[$row['line_id']]['line_name'])?$linesarr[$row['line_id']]['line_name']:'线路已删除';
+
+			}
 		return $rerows;
+	}
+	//获取设备的id下标数组
+	protected function get_all_devs_info_index_id(){
+		$this->queries="SELECT * FROM devs";
+		$rows=null;
+		if($this->is_use_mysqli){
+			$result=mysqli_query($this->dbcon,$this->queries);
+			if(!$result)
+				return null;		
+			while($row=mysqli_fetch_array($result))
+				$rows[$row['dev_id']]=$row;
+		}
+		else{
+			$result=mysql_query($this->queries,$this->dbcon);
+			if(!$result)
+				return null;
+			while($row=mysql_fetch_array($result))
+				$rows[$row['dev_id']]=$row;
+		}
+		return $rows;
 	}
 	//返回一个三维数组，用【线路ID】【杆塔ID】【相位】下标反查设备编号
 	protected function get_all_devs_num_index_line_id_gro_id_dev_phase(){
@@ -785,6 +807,24 @@ class db{
 		if(!$rows)
 			return null;
 		return $rows;
+	}
+
+	public function get_last_alarms(){
+		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC LIMIT 0,20";
+		$rows=$this->get_rows();
+		$devsarr=$this->get_all_devs_info_index_id();
+		$i=0;
+		$rerows=null;
+		if($rows){
+			foreach ($rows as $row) {
+				if(!isset($devsarr[$row['dev_id']]))
+					$devsarr[$row['dev_id']]['dev_number']='设备已删除';
+				$rerows[$i]=$row;
+				$rerows[$i++]['dev_number']=$devsarr[$row['dev_id']]['dev_number'];
+				
+			}
+		}
+		return $rerows;
 	}
 }
 ?>

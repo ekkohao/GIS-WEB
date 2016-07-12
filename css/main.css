@@ -348,6 +348,65 @@ table.table-userlist>tbody .notsend{
 .widget .table {
     margin-bottom:0;
 }
+
+/*home-box*/
+.home-box .user-info-cover{
+    height:75px;
+    background-color:#4c9ed9;
+    position: relative;
+}
+.home-box .user-info-cover .headpic{
+    width: 60px;
+    height: 60px;
+    padding: 3px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    margin-left: -30px;
+    background-image:url(../img/logo.png);
+}
+.home-box .user-info-box{
+    text-align:center;
+    margin-top:20px;
+    padding:8px 10px;
+}
+.home-box .user-info-box .name{
+    font-size:20px;
+    font-weight:bold;
+    color:#4c9ed9;
+    margin-bottom: 5px;
+}
+.home-box .user-info-box .role{
+    font-size:12px;
+    color:#9c9c9c;
+    margin-bottom: 5px;
+}
+.home-box .user-info-box .time{
+    color:#444;
+}
+
+.home-box .bignav-box{
+    border-radius: 4px;
+    border:1px solid #3188C8;
+    margin-bottom:5px; 
+}
+.home-box .bignav-box .bignav-title{
+    display: block;
+    height:125px;
+    padding:10px;
+    line-height:105px;
+    font-size:35px;
+    letter-spacing:10px;
+    text-align:center;
+    background-color: #4c9ed9;
+    color:#fff;
+}
+.home-box .bignav-box .bignav-title:hover{
+    background-color: #3188C8;
+}
+
 .pop-box{
     position: fixed;
     width: 100%;
