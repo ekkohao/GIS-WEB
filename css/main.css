@@ -348,6 +348,9 @@ table.table-userlist>tbody .notsend{
 .widget .table {
     margin-bottom:0;
 }
+.widget #map-box{
+    height: 700px;
+}
 
 /*home-box*/
 .home-box .user-info-cover{
@@ -394,9 +397,9 @@ table.table-userlist>tbody .notsend{
 }
 .home-box .bignav-box .bignav-title{
     display: block;
-    height:125px;
+    height:105px;
     padding:10px;
-    line-height:105px;
+    line-height:85px;
     font-size:35px;
     letter-spacing:10px;
     text-align:center;

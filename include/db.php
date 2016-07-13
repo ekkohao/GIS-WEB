@@ -407,7 +407,7 @@ class db{
 	public function update_group($group_id,$group_name,$group_loc,$line_id=0,$line_id2=0,$coor_long,$coor_lat){
 		$err=null;
 		$i=0;
-		if($this->get_group_id($group_name, $group_loc)!=$group_id)
+		if(($o_gid=$this->get_group_id($group_name, $group_loc))&&$o_gid!=$group_id)
 			$err[$i++]="已有相同名字的杆塔名和杆塔地址";
 		if($line_id==$line_id2&&$line_id)
 			$err[$i++]="一个杆塔的两条线路不能相同";
@@ -419,6 +419,7 @@ class db{
 			else
 				return true;
 		}
+		
 		$this->set_errors($i,$err);
 		return false;
 	}
@@ -427,7 +428,7 @@ class db{
 		$err=null;
 		$i=0;
 		if(!$this->has_group($group_id))
-			$err[$i++]="线路不存在或已删除";
+			$err[$i++]="杆塔不存在或已删除";
 		else{
 			$this->queries="DELETE FROM groups WHERE group_id=".$group_id;
 			$result=$this->get_result();
@@ -563,6 +564,17 @@ class db{
 		}
 		return $rows;
 	}
+	public function get_all_groups_coor_index_line_id(){
+		$this->queries="SELECT groups.group_id,groups.coor_long,groups.coor_lat,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
+		$rows=$this->get_rows();
+		$rerows=null;
+		if($rows)
+			foreach ($rows as $row) {
+				$rerows[$row['line_id']][$row['group_id']]['lng']=$row['coor_long'];
+				$rerows[$row['line_id']][$row['group_id']]['lat']=$row['coor_lat'];
+			}
+		return $rerows;			
+	}
 	//指定杆塔是否绑定了指定线路-------------------------------已规范化
 	public function is_group_has_line($group_id,$line_id){
 		$this->queries="SELECT group_id FROM groups WHERE group_id=".$group_id." AND (line_id=".$line_id." OR line_id2=".$line_id.")";
@@ -571,29 +583,7 @@ class db{
 			return true;
 		return false;
 	}
-	public function get_all_lines(){
-		$this->queries="SELECT * FROM liness";
-		return $this->get_rows();
-	}
-	public function get_all_lines_info_index_id(){
-		$this->queries="SELECT * FROM liness";
-		$rows=null;
-		if($this->is_use_mysqli){
-			$result=mysqli_query($this->dbcon,$this->queries);
-			if(!$result)
-				return null;
-			while($row=mysqli_fetch_array($result))
-				$rows[$row['line_id']]=$row;
-		}
-		else{
-			$result=mysql_query($this->queries,$this->dbcon);
-			if(!$result)
-				return null;
-			while($row=mysql_fetch_array($result))
-				$rows[$row['line_id']]=$row;
-		}
-		return $rows;
-	}
+
 
 	/*******************************************************
 	 *line
@@ -681,7 +671,29 @@ class db{
 			return $result[0]['line_name'];
 		return false;
 	}
-
+	public function get_all_lines(){
+		$this->queries="SELECT * FROM liness";
+		return $this->get_rows();
+	}
+	public function get_all_lines_info_index_id(){
+		$this->queries="SELECT * FROM liness";
+		$rows=null;
+		if($this->is_use_mysqli){
+			$result=mysqli_query($this->dbcon,$this->queries);
+			if(!$result)
+				return null;
+			while($row=mysqli_fetch_array($result))
+				$rows[$row['line_id']]=$row;
+		}
+		else{
+			$result=mysql_query($this->queries,$this->dbcon);
+			if(!$result)
+				return null;
+			while($row=mysql_fetch_array($result))
+				$rows[$row['line_id']]=$row;
+		}
+		return $rows;
+	}
 	/*******************************************
 	 *USERS
 	 *user_role 1系统管理员  2超级管理员 3设备管理员 5普通用户

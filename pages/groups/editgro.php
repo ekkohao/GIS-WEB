@@ -100,7 +100,7 @@ $group=$mydb->get_group($_GET['groid']);
 					<div class="form-group">
 				<label for="inputCoor" class="col-sm-3 control-label input-required">杆塔坐标</label>
 				<div class="col-sm-6">
-					<input type="text" class="form-control" id="inputCoor" placeholder="例如：12.3456,12.3456" required="required" value="<?php echo $group['coor_long'].','.$group['coor_long']; ?>">
+					<input type="text" class="form-control" id="inputCoor" placeholder="例如：12.3456,12.3456" required="required" value="<?php echo $group['coor_long'].','.$group['coor_lat']; ?>">
 					<label>
 						<a href="http://api.map.baidu.com/lbsapi/getpoint/index.html" target="_blank">坐标查询</a>
 						&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-coor"></span>
