@@ -578,8 +578,9 @@ class db{
 	//指定杆塔是否绑定了指定线路-------------------------------已规范化
 	public function is_group_has_line($group_id,$line_id){
 		$this->queries="SELECT group_id FROM groups WHERE group_id=".$group_id." AND (line_id=".$line_id." OR line_id2=".$line_id.")";
-		$rows=$this->get_rows();
-		if($rows&&count($rows)>0)
+		//$this->queries="SELECT * FROM groups";
+		$result=$this->get_result();
+		if($result)
 			return true;
 		return false;
 	}
@@ -879,7 +880,7 @@ class db{
 				$err[$i++]="设备[".$dev['dev_number']."]已存在";
 				continue;
 			}
-			$line_id=($dev['line_name']=='无')?0:$this->get_line_vi_name($dev['line_name']);
+			$line_id=($dev['line_name']=='无')?0:$this->get_line_vi_name($dev['line_name'])['line_id'];
 			if($line_id==0&&$dev['line_name']!='无'){
 				$this->add_line($dev['line_name']);
 				$line_id=$this->get_line_vi_name($dev['line_name']);
