@@ -3,7 +3,7 @@ if(!defined('ABSPATH'))
 	define('ABSPATH', dirname(dirname(dirname(__FILE__))));
 require ABSPATH.'/setting.php';
 header("Content-type:application/json; charset=UTF-8");
-require_db();
+global $mydb;
 
 //$data=null;
 $errorsinfo=null;

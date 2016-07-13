@@ -304,7 +304,7 @@ class db{
 		$rows=$this->get_rows();
 		if($rows&&count($rows)>0)
 			return $rows[0]['dev_id'];
-		return false;
+		return 0;
 	}
 	//某杆塔和线路的某相位上是否存在设备，若存在返回存在设备信息
 	public function has_dev_on_line_group_phase($dev_phase,$group_id,$line_id){
@@ -470,7 +470,7 @@ class db{
 	public function get_real_gro_loc_name($group_id){
 		if($group_id==0)
 			return "无";
-		$row=$this->get_line($group_id);
+		$row=$this->get_group($group_id);
 		if($row!=null)
 			return $row['group_loc'].'-'.$row['group_name'];
 		return "已删除";
@@ -837,6 +837,70 @@ class db{
 			}
 		}
 		return $rerows;
+	}
+	public function get_last_alarm_id(){
+		$this->queries="SELECT id FROM alarms ORDER BY id DESC LIMIT 0,1 ";
+		$rows=$this->get_rows();
+		if($rows)
+			return $rows[0]['id'];
+		return 0;
+	}
+	public function get_alarm($id){
+		$this->queries="SELECT * FROM alarms where id=".$id;
+		$rows=$this->get_rows();
+		if($rows)
+			return $rows[0];
+		return null;
+	}
+	public function output_devs_to_excel(){
+		$this->queries="SELECT * FROM devs";
+		$rows=$this->get_rows();
+		if(!$rows)
+			return null;
+		$rerows=null;
+		$groups=$this->get_all_groups_info_index_id();
+		$lines=$this->get_all_lines_info_index_id();
+		foreach ($rows as $key => $row) {
+			$rerows[$key]=$row;
+			$rerows[$key]['group_name']=(isset($groups[$row['group_id']]['group_name']))?$groups[$row['group_id']]['group_name']:'无';
+			$rerows[$key]['group_loc']=(isset($groups[$row['group_id']]['group_loc']))?$groups[$row['group_id']]['group_loc']:'无';
+			$rerows[$key]['coor_long']=(isset($groups[$row['group_id']]['coor_long']))?$groups[$row['group_id']]['coor_long']:0.0;
+			$rerows[$key]['coor_lat']=(isset($groups[$row['group_id']]['coor_lat']))?$groups[$row['group_id']]['coor_lat']:0.0;
+			$rerows[$key]['line_name']=(isset($lines[$row['line_id']]['line_name']))?$lines[$row['line_id']]['line_name']:'无';
+		}
+		return $rerows;
+	}
+	public function input_devs_from_excel($devs){
+		$i=0;
+		$err=null;
+		foreach ($devs as $dev) {
+			$dev_id=$this->get_dev_vi_number($dev['dev_number']);
+			if($dev_id!=0){
+				$err[$i++]="设备[".$dev['dev_number']."]已存在";
+				continue;
+			}
+			$line_id=($dev['line_name']=='无')?0:$this->get_line_vi_name($dev['line_name']);
+			if($line_id==0&&$dev['line_name']!='无'){
+				$this->add_line($dev['line_name']);
+				$line_id=$this->get_line_vi_name($dev['line_name']);
+				$err[$i++]="新插入了线路[".$dev['line_name']."]";
+			}
+			$group_id=($dev['group_name']=='无')?0:$this->get_group_id($dev['group_name'],$dev['group_loc']);
+			if($group_id==0&&$dev['group_name']!='无'){
+				$this->add_group($dev['group_name'],$dev['group_loc'],$line_id,0,$dev['coor_long'],$dev['coor_lat']);
+				$group_id=$this->get_group_id($dev['group_name'],$dev['group_loc']);
+				$err[$i++]="新插入了杆塔[".$dev['line_name']."]";
+			}
+			elseif(!$this->is_group_has_line($group_id,$line_id)){
+				$err[$i++]="设备[".$dev['dev_number']."]插入失败，导入的杆塔未绑定相应线路";
+				continue;
+			}
+			if($this->add_dev($dev['dev_number'],$dev['dev_phase'],$group_id,$line_id))
+				$err[$i++]="设备[".$dev['dev_number']."]插入成功";
+			else
+				$err[$i++]="设备[".$dev['dev_number']."]插入失败，请检查数据库连接";
+		}
+		return $err;
 	}
 }
 ?>

@@ -4,7 +4,19 @@ if(is_current_user_can_see(3)){
 
 	<div class="btn-group">
 		<a id="add_dev" href="index.php?page=devs&action=newdev" class="btn btn-success">新增设备 </a>
+		<?php if(is_current_user_can_see(3)){ ?>
+			<a id="output_dev" href="index.php?page=excel&action=output" class="btn btn-success">导出设备</a>
+		<?php } ?>
 	</div>
+	<?php if(is_current_user_can_see(1)){ ?>
+	<form class="form-inline pull-right" action="index.php?page=excel&action=input" method="post"  enctype="multipart/form-data" >
+		<div class="form-group">
+			<label class="sr-only" for="InputFile">导入Excel表</label>
+			<input type="file" name="file_stu" accept=".xls"/>
+		</div>
+		<button type="submit" class="btn btn-success">导入设备</button>
+	</form>
+	<?php } ?>
 
 <?php 
 }
@@ -15,7 +27,7 @@ if($devs&&count($devs)>0){
 ?>
 	<table class="table striped table-devlist">
 		<thead><tr>
-			<th><input id="cb-select-all" type="checkbox"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
+			<th><input id="cb-select-all" type="hidden"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
 		</tr></thead>
 		<tbody>
 		<?php
@@ -24,7 +36,7 @@ if($devs&&count($devs)>0){
 			$tdclass1=	($dev['group_name']=='&nbsp;')?'togray':'';
 			$tdclass2=	($dev['line_name']=='未绑定'||$dev['line_name']=='线路已删除')?'togray':'';
 			$html='';
-			$html.='<tr><td><input id="cb-select-'.$dev['dev_id'].'" type="checkbox" value="'.$dev['dev_id'].'"><br />&nbsp;</td><td><strong>'.$dev['dev_number'].'</strong>';
+			$html.='<tr><td><input id="cb-select-'.$dev['dev_id'].'" type="hidden" value="'.$dev['dev_id'].'"><br />&nbsp;</td><td><strong>'.$dev['dev_number'].'</strong>';
 			if(is_current_user_can_see(3))
 				$html.= '<div class="row-actions"><span class="edit"><a href="index.php?page=devs&action=editdev&devid='.$dev['dev_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div>';
 			$html.= '</td><td>'.$dev['dev_phase'].'</td><td class="'.$tdclass1.'">'.$dev['group_loc'].'<br />'.$dev['group_name'].'</td><td class="'.$tdclass1.'">'.$dev['line_name'].'</td></tr>';
@@ -33,7 +45,7 @@ if($devs&&count($devs)>0){
 		?>
 		</tbody>
 		<tfoot><tr>
-			<th><input id="cb-select-all" type="checkbox"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
+			<th><input id="cb-select-all" type="hidden"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
 		</tr></tfoot>
 	</table>
 
