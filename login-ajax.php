@@ -1,5 +1,5 @@
 <?php
-require '/setting.php';
+require 'setting.php';
 
 
 session_init_and_redirect(false);

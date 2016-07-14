@@ -6,7 +6,6 @@
 	    <link rel="stylesheet" id="bootstrap-css" href="http://apps.bdimg.com/libs/bootstrap/3.2.0/css/bootstrap.css?ver=9.0.0" type="text/css" media="all">
 	    <link rel="stylesheet" id="fontawesome-css" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css" type="text/css" media="all">
 	    <link href="css/main.css" rel="stylesheet">
-	    <link href="css/datetimepick.css" rel="stylesheet">
 	    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
 	    <title>科鼎地理信息服务系统</title>
 	</head>
@@ -23,7 +22,7 @@
 	    <div id="bodier" class="">
 	        <div class="container">
 				<div class="row">
-				  	<div class="col-md-4">
+				  	<div class="col-md-3">
 				  		<div class="home-box widget">
 				  			<div class="user-info-cover" id="skin_cover_s">
 				  				<div class="headpic"></div>
@@ -63,9 +62,9 @@
 				  			</div>
 				  		</div>
 				  	</div>
-				  	<div class="col-md-8">
+				  	<div class="col-md-9">
 				  		<div class="home-box widget">
-				  			<h3>最近报警信息</h3>
+				  			<h3>最近报警信息(<a href="index.php?page=excel&action=alarmslog">更多</a>)</h3>
 				  		</div>
 				  			<?php 
 				  			$alarms=$mydb->get_last_alarms();

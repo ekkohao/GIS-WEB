@@ -7,18 +7,17 @@
     var arr_cc = ['#9ACD32', '#f7a35c', '#8085e9','#f15c80', '#e4d354'];
     $.ajax({
         type: "post",
-        url: "datapost.aspx",
+        url: "pages/charts/alarms-info-ajax.php",
         dataType: "json",
         data: "dateFrom="+ datefrom+"&dateTo="+dateto+"&devId="+devid,
         beforeSend: LoadFunction, //加载执行方法    
         //error: erryFunction,  //错误执行方法    
-        success: function (tt) {
-            var json = eval(tt); //数组
-            var tt = "";
-            if (json.devinfo == null)
+        success: function (json) {
+
+            if (json.dev == null)
                 $("dl.devinfo").html("&nbsp;&nbsp;&nbsp;&nbsp;没有此设备，请重新选择设备");
             else
-                $("dl.devinfo").html("<dt>设备编号</dt><dd>" + json.devinfo.dev_name + "</dd><dt>所属杆塔</dt><dd>" + json.devinfo.group_name + "</dd><dt>相位</dt><dd>" + json.devinfo.dev_phase + "</dd>");
+                $("dl.devinfo").html("<dt>设备编号</dt><dd>" + json.dev.dev_number + "</dd><dt>相位</dt><dd>" + json.dev.dev_phase+"</dd><dt>所属杆塔</dt><dd>" + json.dev.group_loc_name + "</dd><dt>所在线路</dt><dd>" + json.dev.line_name + "</dd>");
             if (json.data == null) {
                 alert("该时段没有数据！");
                 return;
@@ -174,18 +173,16 @@ function getInfo2(datefrom, dateto, devid) {
     var arr_cc = ['#9ACD32', '#f7a35c', '#8085e9', '#f15c80', '#e4d354'];
     $.ajax({
         type: "post",
-        url: "datapost.aspx",
+        url: "pages/charts/alarms-info-ajax.php",
         dataType: "json",
         data: "dateFrom=" + datefrom + "&dateTo=" + dateto + "&devId=" + devid,
         beforeSend: LoadFunction, //加载执行方法    
         //error: erryFunction,  //错误执行方法    
-        success: function (tt) {
-            var json = eval(tt); //数组
-            var tt = "";
-            if (json.devinfo == null)
+        success: function (json) {
+            if (json.dev == null)
                 $("dl.devinfo").html("&nbsp;&nbsp;&nbsp;&nbsp;没有此设备，请重新选择设备");
             else
-                $("dl.devinfo").html("<dt>设备编号</dt><dd>" + json.devinfo.dev_name + "</dd><dt>所属杆塔</dt><dd>" + json.devinfo.group_name + "</dd><dt>相位</dt><dd>" + json.devinfo.dev_phase + "</dd>");
+                $("dl.devinfo").html("<dt>设备编号</dt><dd>" + json.dev.dev_number + "</dd><dt>相位</dt><dd>" + json.dev.dev_phase+"</dd><dt>所属杆塔</dt><dd>" + json.dev.group_loc_name + "</dd><dt>所在线路</dt><dd>" + json.dev.line_name + "</dd>");
             if (json.data == null) {
                 alert("该时段没有数据！");
                 return;
@@ -366,7 +363,7 @@ function init() {
         $("#inputdatefrom").val(getNowFormatDate(1));
     var datefrom = $("#inputdatefrom").val();
     var dateto = $("#inputdateto").val();
-    var d = GetQueryString("d");
+    var d = GetQueryString("devnum");
     if (d != null) {
         $(".main-pick .dev-select select").val(d);
         getInfo1(datefrom, dateto, d);

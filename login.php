@@ -53,7 +53,7 @@ elseif($_GET['action'] == "login"){
     <header id="header">
         <div class="container">
             <h1 class="center-block">科鼎地理信息服务系统</h1>
-
+            <br />
         </div>
     </header>
 

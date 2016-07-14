@@ -246,18 +246,30 @@ table.table-userlist>tbody .notsend{
  #bodier{
     min-height: 650px;
 }
-.wrap{
-    float:left;
-     width:100%;
-     min-height:450px;
-     padding-right:450px;
-}
 
-.login-bar{
-  float:left;
-  width:450px;
-  padding:100px 20px;
-  margin-left:-450px;
+
+@media (min-width:750px){
+    .login-bar{
+          float:left;
+          width:450px;
+          padding:100px 20px;
+          margin-left:-450px;
+    }
+    .wrap{
+        float:left;
+         width:100%;
+         min-height:450px;
+         padding-right:450px;
+    }
+}
+@media (max-width:750px){
+    .login-bar{
+          padding:0px 20px;
+    }
+    .wrap{
+         width:100%;
+         min-height:200px;
+    }
 }
 .btn-group{
   margin-bottom:15px;
@@ -406,11 +418,11 @@ table.table-userlist>tbody .notsend{
     }
     .home-box .bignav-box .bignav-title{
         display: block;
-        height:105px;
+        height:80px;
         padding:10px;
-        line-height:85px;
-        font-size:35px;
-        letter-spacing:10px;
+        line-height:60px;
+        font-size:25px;
+        letter-spacing:3px;
         text-align:center;
         background-color: #4c9ed9;
         color:#fff;

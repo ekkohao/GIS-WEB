@@ -234,6 +234,10 @@ class db{
 	public function add_dev($dev_number,$dev_phase,$group_id,$line_id){
 		$err=null;
 		$i=0;
+		if(!isset($dev_number)||strlen($dev_number)!=10)
+			$err[$i++]="设备编号位数错误";
+		if(!in_array($dev_phase, array('A相','B相','C相')))
+			$err[$i++]="设备相位错误";
 		if(!$this->is_group_has_line($group_id,$line_id))
 			$err[$i++]="指定杆塔未绑定相应线路";
 		if($this->get_dev_vi_number($dev_number))
@@ -299,7 +303,7 @@ class db{
 		return false;
 	}
 	//若有返回devid
-	protected function get_dev_vi_number($dev_number){
+	public function get_dev_vi_number($dev_number){
 		$this->queries="SELECT dev_id FROM devs WHERE dev_number=".$dev_number;
 		$rows=$this->get_rows();
 		if($rows&&count($rows)>0)
@@ -387,6 +391,8 @@ class db{
 	public function add_group($group_name,$group_loc,$line_id=0,$line_id2=0,$coor_long,$coor_lat){
 		$err=null;
 		$i=0;
+		if(!isset($group_name)||strlen($group_name)<1||!isset($group_loc)||strlen($group_loc)<1)
+			$err[$i++]="杆塔名和杆塔地址不能位空";
 		if($this->get_group_id($group_name, $group_loc))
 			$err[$i++]="已有相同名字的杆塔名和杆塔地址";
 		if($line_id==$line_id2&&$line_id)
@@ -610,7 +616,7 @@ class db{
 	public function update_line($line_id,$line_new_name){
 		$err=null;
 		$i=0;
-		if($line_new_name==""||!$line_new_name)
+		if(!isset($line_new_name)||strlen($line_new_name)<1)
 			$err[$i++]="线路名不能为空";
 		if($this->get_line_vi_name($line_new_name))
 			$err[$i++]="修改线路名失败，已有相同名字的线路";
@@ -822,6 +828,21 @@ class db{
 		return $rows;
 	}
 
+	public function get_alarms(){
+		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC";
+		$rows=$this->get_rows();
+		$devsarr=$this->get_all_devs_info_index_id();
+		if($rows){
+			foreach ($rows as $key=>$row) {
+				if(!isset($devsarr[$row['dev_id']]))
+					$devsarr[$row['dev_id']]['dev_number']='设备已删除';
+				$rows[$key]['dev_number']=$devsarr[$row['dev_id']]['dev_number'];
+				
+			}
+		}
+		return $rows;
+	}
+
 	public function get_last_alarms(){
 		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC LIMIT 0,20";
 		$rows=$this->get_rows();
@@ -853,6 +874,15 @@ class db{
 			return $rows[0];
 		return null;
 	}
+	public function get_dev_alarms($dev_id,$date_from,$date_to){
+
+		$this->queries="SELECT * FROM alarms where dev_id=".$dev_id." AND action_time BETWEEN '".$date_from."' AND '".$date_to."' ORDER BY action_time";
+				$rows=$this->get_rows();
+		if($rows)
+			return $rows;
+		return null;
+	}
+
 	public function output_devs_to_excel(){
 		$this->queries="SELECT * FROM devs";
 		$rows=$this->get_rows();
@@ -898,10 +928,13 @@ class db{
 			}
 			if($this->add_dev($dev['dev_number'],$dev['dev_phase'],$group_id,$line_id))
 				$err[$i++]="设备[".$dev['dev_number']."]插入成功";
-			else
-				$err[$i++]="设备[".$dev['dev_number']."]插入失败，请检查数据库连接";
+			else{
+				for($j=0;$j<$this->last_errors['count'];$j++)
+					$err[$i++]=$this->last_errors['errors'][$j];
+			}
 		}
 		return $err;
 	}
+
 }
 ?>
