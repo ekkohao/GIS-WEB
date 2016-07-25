@@ -1,22 +1,25 @@
 <?php 
 	
 	global $mydb,$__USER;
-	$user=$mydb->get_user($_GET['uid']);
-	if($user['user_role']==1||$user['user_role']<=$__USER['user_role']){
-			hao_direct("index.php");
-	}
-
+	$user=$mydb->get_user($__USER['user_id']);
 ?>
 
 <div class="widget">
-	<h3>编辑用户</h3>
-	<form class="form-horizontal form-newuser form-edituser">
+	<h3>修改资料</h3>
+	<form class="form-horizontal form-newuser form-editself">
 		<div class="form-group">
 			<label for="inputUserName" class="col-sm-3 control-label input-required">用户名</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputUserName"
 					placeholder="用户名" required="required" value="<?php echo $user['user_name'];?>"/>
 				<label>即登陆名，用户名长度在30个字符以内&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-groname"></span></label>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputOldPasswd" class="col-sm-3 control-label input-required">旧密码</label>
+			<div class="col-sm-6">
+				<input type="password" class="form-control" id="inputOldPasswd" placeholder="新密码" required="required">
+				<label>请输入旧密码&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-oldpasswd"></span></label>
 			</div>
 		</div>
 		<div class="form-group">
@@ -34,18 +37,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="selectUserRole" class="col-sm-3 control-label">用户权限</label>
-			<div class="col-sm-6">
-				<select class="form-control" id="selectUserRole">
-					<option<?php echo ($user['user_role']==2)?' selected="selected"':''; ?> value="2">超级管理员</option>
-					<option<?php echo ($user['user_role']==3)?' selected="selected"':''; ?>  value="3">设备管理员</option>
-					<option<?php echo ($user['user_role']==5)?' selected="selected"':''; ?>  value="5">普通用户</option>
-				</select>
-				<label><span class="error"></span></label>
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="inputPhone" class="col-sm-3 control-label">用户手机</label>
+			<label for="inputPhone" class="col-sm-3 control-label">手机</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputPhone" placeholder="手机" value="<?php echo $user['user_phone'];?>"/>
 				<label>不填或0则不绑定手机<span class="error error-phone"></span></label>
@@ -62,7 +54,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="inputEmail" class="col-sm-3 control-label">用户邮箱</label>
+			<label for="inputEmail" class="col-sm-3 control-label">邮箱</label>
 			<div class="col-sm-6">
 				<input type="email" class="form-control" id="inputEmail" placeholder="邮箱" value="<?php echo $user['user_email'];?>">
 				<label><span class="error error-email"></span></label>
@@ -75,8 +67,8 @@
 				<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
 			</div>
 		</div>
-		<input type="hidden" class="form-control" id="inputUID" value="<?php echo $_GET['uid'];?>"/>
+		<input type="hidden" class="form-control" id="inputUID" value="<?php echo $__USER['user_id'];?>"/>
 	</form>
 </div>
 
-<script type="text/javascript" src="js/newuser.js"></script>
+<script type="text/javascript" src="js/editself.js"></script>

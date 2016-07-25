@@ -1,3 +1,4 @@
+<p><small>显示用户列表，手机号红色表示不转发短信，绿色表示转发短信</small></p>
 <div class="btn-group">
 	<a href="index.php?page=users&action=newuser" class="btn btn-success">新用户</a>
 </div>

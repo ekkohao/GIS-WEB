@@ -249,8 +249,11 @@ class db{
 				$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="添加设备失败，请稍后再试";
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."添加了设备".$dev_number);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -266,12 +269,16 @@ class db{
 		elseif(($o_dev=$this->has_dev_on_line_group_phase($dev_phase,$group_id,$line_id))&&$o_dev['dev_id']!=$dev_id)
 			$err[$i++]="设备编号为".$o_dev['dev_number']."的设备已存在于此位置（含有相同的杆塔、线路和相位信息）";
 		if($i==0){
-			$this->queries="UPDATE devs SET dev_name='".$dev_number."',dev_phase='".$dev_phase."',group_id=".$group_id.",line_id=".$line_id." WHERE dev_id=".$dev_id;
+			$dev=$this->get_dev($dev_id);
+			$this->queries="UPDATE devs SET dev_number='".$dev_number."',dev_phase='".$dev_phase."',group_id=".$group_id.",line_id=".$line_id." WHERE dev_id=".$dev_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改设备信息失败";
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."修改了设备".$dev['dev_number']);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -283,13 +290,17 @@ class db{
 		if(!$this->has_dev($dev_id))
 			$err[$i++]="设备不存在或已删除";
 		else{
+			$dev=$this->get_dev($dev_id);
 			$this->queries="DELETE FROM devs WHERE dev_id=".$dev_id;
 			if($this->is_use_mysqli)
 				$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("删除失败失败，请稍后再试");
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."删除了设备".$dev['dev_number']);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -403,8 +414,11 @@ class db{
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="添加线路失败，请稍后再试";
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."添加了杆塔".$group_name);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -418,12 +432,16 @@ class db{
 		if($line_id==$line_id2&&$line_id)
 			$err[$i++]="一个杆塔的两条线路不能相同";
 		if($i==0){
+			$group=$this->get_group($group_id);
 			$this->queries="UPDATE groups SET group_name='".$group_name."',group_loc='".$group_loc."',line_id=".$line_id.",line_id2=".$line_id2.",coor_long=".$coor_long.",coor_lat=".$coor_lat." WHERE group_id=".$group_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改线路失败，请稍后再试";
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."修改了杆塔".$group['group_name']."的资料");
 				return true;
+			}
 		}
 		
 		$this->set_errors($i,$err);
@@ -436,12 +454,16 @@ class db{
 		if(!$this->has_group($group_id))
 			$err[$i++]="杆塔不存在或已删除";
 		else{
+			$group=$this->get_group($group_id);
 			$this->queries="DELETE FROM groups WHERE group_id=".$group_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("删除杆塔失败，请稍后再试");
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."删除了杆塔".$group['group_name']);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -607,8 +629,11 @@ class db{
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("添加线路失败");
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."添加了线路".$line_name);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -621,12 +646,16 @@ class db{
 		if($this->get_line_vi_name($line_new_name))
 			$err[$i++]="修改线路名失败，已有相同名字的线路";
 		if($i==0){
+			$line=$this->get_line($line_id);
 			$this->queries="UPDATE `liness` SET line_name='".$line_new_name."' WHERE line_id=".$line_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("修改线路失败");
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."修改线路".$line['line_name']."为".$line_new_name);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -638,12 +667,16 @@ class db{
 		if(!$this->has_line($line_id))
 			$err[$i++]="线路不存在或已删除";
 		else{
+			$line=$this->get_line($line_id);
 			$this->queries="DELETE FROM liness WHERE line_id=".$line_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("删除线路失败，请稍后再试");
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."删除了线路".$line['line_name']);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;
@@ -720,8 +753,11 @@ class db{
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("添加用户失败，请联系管理员");
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."添加了用户".$user_name);
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;	
@@ -741,12 +777,39 @@ class db{
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改用户失败，请联系管理员";
+			else{
+				global $__USER;
+				$user=$this->get_user($user_id);
+				$this->add_dolog($__USER['user_name']."修改了用户".$user['user_name']."的资料");
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;	
+	}
+
+	public function update_userself($user_id,$old_name,$user_name,$oldpasswd,$passwd,$user_phone,$user_email,$is_send){
+		$err=null;
+		$i=0;
+		if($passwd==""||$passwd==null)
+			$passwd=$oldpasswd;
+		$passwdd=md5($passwd);
+		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
+			$err[$i++]=("用户名已存在");
+		if($this->get_user_vi_name_pwd($old_name,$oldpasswd)==null)
+			$err[$i++]=("旧密码输入错误");
+		if($i==0){
+			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]="修改用户失败，请联系管理员";
 			else
 				return true;
 		}
 		$this->set_errors($i,$err);
 		return false;	
 	}
+
 	public function update_user_nopwd($user_id,$user_name,$user_role,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
@@ -758,8 +821,12 @@ class db{
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改用户失败，请联系管理员";
-			else
+			else{
+				global $__USER;
+				$user=$this->get_user($user_id);
+				$this->add_dolog($__USER['user_name']."修改了用户".$user['user_name']."的资料");
 				return true;
+			}
 		}
 		$this->set_errors($i,$err);
 		return false;	
@@ -772,12 +839,16 @@ class db{
 		if($user_id==1)
 			$err[$i++]="权限不足，此用户无法删除";
 		if($i==0){
+			$user=$this->get_user($user_id);
 			$this->queries="DELETE FROM users WHERE user_id=".$user_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="删除用户失败，请联系管理员";
-			else
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."删除了用户".$user['user_name']);
 				return true;
+			}
 		}		
 		$this->set_errors($i,$err);
 		return false;
@@ -832,12 +903,15 @@ class db{
 		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC";
 		$rows=$this->get_rows();
 		$devsarr=$this->get_all_devs_info_index_id();
+		$groupsarr=$this->get_all_groups_info_index_id();
+		$linesarr=$this->get_all_lines_info_index_id();
 		if($rows){
 			foreach ($rows as $key=>$row) {
-				if(!isset($devsarr[$row['dev_id']]))
-					$devsarr[$row['dev_id']]['dev_number']='设备已删除';
-				$rows[$key]['dev_number']=$devsarr[$row['dev_id']]['dev_number'];
+				$rows[$key]['dev_number']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_number']:'设备已删除';
+				$rows[$key]['dev_phase']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_phase']:'设备已删除';
+				$rows[$key]['group_loc_name']=(isset($groupsarr[$devsarr[$row['dev_id']]['group_id']]))?($groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_loc'].'-'.$groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
 				
+				$rows[$key]['line_name']=(isset($linesarr[$devsarr[$row['dev_id']]['line_id']]))?$linesarr[$devsarr[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
 			}
 		}
 		return $rows;
@@ -847,18 +921,18 @@ class db{
 		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC LIMIT 0,20";
 		$rows=$this->get_rows();
 		$devsarr=$this->get_all_devs_info_index_id();
-		$i=0;
-		$rerows=null;
+		$groupsarr=$this->get_all_groups_info_index_id();
+		$linesarr=$this->get_all_lines_info_index_id();
 		if($rows){
-			foreach ($rows as $row) {
-				if(!isset($devsarr[$row['dev_id']]))
-					$devsarr[$row['dev_id']]['dev_number']='设备已删除';
-				$rerows[$i]=$row;
-				$rerows[$i++]['dev_number']=$devsarr[$row['dev_id']]['dev_number'];
+			foreach ($rows as $key=>$row) {
+				$rows[$key]['dev_number']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_number']:'设备已删除';
+				$rows[$key]['dev_phase']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_phase']:'设备已删除';
+				$rows[$key]['group_loc_name']=(isset($groupsarr[$devsarr[$row['dev_id']]['group_id']]))?($groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_loc'].'-'.$groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
 				
+				$rows[$key]['line_name']=(isset($linesarr[$devsarr[$row['dev_id']]['line_id']]))?$linesarr[$devsarr[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
 			}
 		}
-		return $rerows;
+		return $rows;
 	}
 	public function get_last_alarm_id(){
 		$this->queries="SELECT id FROM alarms ORDER BY id DESC LIMIT 0,1 ";
@@ -881,6 +955,24 @@ class db{
 		if($rows)
 			return $rows;
 		return null;
+	}
+
+	public function get_histories(){
+		$this->queries="SELECT * FROM histories ORDER BY action_time DESC";
+		$rows=$this->get_rows();
+		$devsarr=$this->get_all_devs_info_index_id();
+		$groupsarr=$this->get_all_groups_info_index_id();
+		$linesarr=$this->get_all_lines_info_index_id();
+		if($rows){
+			foreach ($rows as $key=>$row) {
+				$rows[$key]['dev_number']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_number']:'设备已删除';
+				$rows[$key]['dev_phase']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_phase']:'设备已删除';
+				$rows[$key]['group_loc_name']=(isset($groupsarr[$devsarr[$row['dev_id']]['group_id']]))?($groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_loc'].'-'.$groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
+				
+				$rows[$key]['line_name']=(isset($linesarr[$devsarr[$row['dev_id']]['line_id']]))?$linesarr[$devsarr[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
+			}
+		}
+		return $rows;
 	}
 
 	public function output_devs_to_excel(){
@@ -936,5 +1028,14 @@ class db{
 		return $err;
 	}
 
+	protected function add_dolog($msg){
+		$this->queries="INSERT INTO dologs(do_msg) VALUES('".$msg."')";
+		$result=$this->get_result();
+	}
+	public function get_dologs(){
+		$this->queries="SELECT * FROM dologs ORDER BY do_time DESC";
+		$rows=$this->get_rows();
+		return $rows;
+	}
 }
 ?>

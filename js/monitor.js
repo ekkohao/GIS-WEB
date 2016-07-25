@@ -47,8 +47,7 @@ function drawgroups(groups){
 		content+='<b>'+groups[i]['line_name']+':&nbsp;</b>'+tohref(groups[i]['dev_on_A'])+'&nbsp;|&nbsp;'+tohref(groups[i]['dev_on_B'])+'&nbsp;|&nbsp;'+tohref(groups[i]['dev_on_C'])+'<br />';
 		content+='<b>'+groups[i]['line_name2']+':&nbsp;</b>'+tohref(groups[i]['dev_on_2A'])+'&nbsp;|&nbsp;'+tohref(groups[i]['dev_on_2B'])+'&nbsp;|&nbsp;'+tohref(groups[i]['dev_on_2C']); 
 	  	addClickHandler(marker,point,title,content);
-	}
-	
+	}	
 }
 function addClickHandler(marker,point,title,content){
 	var opts = {
@@ -91,12 +90,13 @@ function listeningEvent(){
         	if(t.has_alarm==1){
         		nowId=t.data.alarm.id;
         		point=new BMap.Point(t.data.group.coor_long,t.data.group.coor_lat);
-        		title='设备'+t.data.dev.dev_name+'报警';
-        		content='报警时间：'+t.data.alarm.action_time+'，动作次数：'+t.data.alarm.action_num+'，电流：'+t.data.alarm.i_num+'uA，温度：'+t.data.alarm.tem+'℃，湿度：'+t.data.alarm.hum+'%<br />杆塔：'+t.data.dev.group_loc_name+'，线路：'+t.data.dev.line_name;
+        		title='设备'+t.data.dev.dev_number+'报警';
+        		content='报警时间：'+t.data.alarm.action_time+'，动作次数：'+t.data.alarm.action_num+'，电流：'+t.data.alarm.i_num+'uA，温度：'+t.data.alarm.tem+'℃，湿度：'+t.data.alarm.hum+'%<br />杆塔：'+t.data.dev.group_loc_name+'，线路：'+t.data.dev.line_name+'，相位：'+t.data.dev.dev_phase;
         		alarmRing(point,title,content);
         		if($('.widget-alarmslist').hasClass('tohide'))
-        			$('.widget-alarmslist').removeClass('tohide')
-        		$('.table-alarmslist tbody').append('<tr><td>'+t.data.dev.dev_name+'</td><td>'+t.data.alarm.action_time+'</td><td>'+t.data.alarm.action_num+'</td><td>'+t.data.alarm.i_num+'</td><td>'+t.data.alarm.tem+'</td><td>'+t.data.alarm.hum+'</td></tr>');
+        			$('.widget-alarmslist').removeClass('tohide');
+        		$('.table-alarmslist tbody').append('<tr><td>'+t.data.dev.dev_number+'</td><td>'+t.data.alarm.action_time+'</td><td>'+t.data.alarm.action_num+'</td><td>'+t.data.alarm.i_num+'</td><td>'+t.data.alarm.tem+'</td><td>'+t.data.alarm.hum+'</td><td>'+t.data.dev.group_loc_name+'<br />'+t.data.dev.line_name+'-'+t.data.dev.dev_phase+'</td></tr>');
+        		$('#warning_mp3')[0].play();
         	}
         }
 	})
@@ -104,11 +104,17 @@ function listeningEvent(){
 function alarmRing(point,title,content){
 	map.panTo(point);
 	var opts = {
-		title : "<b>"+title+"</b>" , // 信息窗口标题
+		title : "<b class='warning-title'>"+title+"</b>" , // 信息窗口标题
 	}
 	var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象 
 	map.openInfoWindow(infoWindow,point); 
-
+	var marker = new BMap.Marker(point);
+	map.addOverlay(marker);
+	marker.setAnimation(BMAP_ANIMATION_BOUNCE);
+	infoWindow.addEventListener("close",function(){
+		map.removeOverlay(marker);
+		$('#warning_mp3')[0].pause();
+	});
 }
 $(document).ready(function(){
 	$('.btn-listen').click(function(){

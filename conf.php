@@ -13,6 +13,7 @@ define('DB_CHARSET', 'utf8');
 //define('DB_COLLATE', '');
 /** 域名地址 */
 define('SITE_URL', 'http://192.168.1.199/GIS-WEB');
+//define('SITE_URL', 'http://www.kedinggis.com');
 define('H_DEBUG', 'false');
 /** WordPress目录的绝对路径。 */
 if ( !defined('ABSPATH') )

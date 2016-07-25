@@ -108,4 +108,19 @@ function hao_load_in($keyname,$arr,$dir){
 		$_GET[$keyname]=$arr[0];
 	hao_require(ABSPATH.'/'.$dir.'/'.$_GET[$keyname].'.php');
 }
+
+function get_head(){
+	$html='<head>';
+	$html.='<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+	$html.='<meta name="viewport" content="width=device-width, initial-scale=1">';
+	$html.='<link rel="icon" href="favicon.ico" type="image/x-icon"/>';
+	$html.='<link rel="bookmark" href="favicon.ico"/>';
+	$html.='<link rel="stylesheet" href="css/bootstrap.css" type="text/css" media="all">';
+	$html.='<link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" media="all">';
+	$html.='<link rel="stylesheet" href="css/main.css">';
+	$html.='<script type="text/javascript" src="js/jquery.js"></script>';
+	$html.='<title>科鼎地理信息服务系统</title>';
+	$html.='</head>';
+	echo $html;
+}
 ?>

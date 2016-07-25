@@ -1,14 +1,6 @@
 <!DOCTYPE HTML>
 <html lang="zh_CN">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	    <meta name="viewport" content="width=device-width, initial-scale=1">
-	    <link rel="stylesheet" id="bootstrap-css" href="http://apps.bdimg.com/libs/bootstrap/3.2.0/css/bootstrap.css?ver=9.0.0" type="text/css" media="all">
-	    <link rel="stylesheet" id="fontawesome-css" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css" type="text/css" media="all">
-	    <link href="css/main.css" rel="stylesheet">
-	    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
-	    <title>科鼎地理信息服务系统</title>
-	</head>
+	<?php get_head(); ?>
 	<body>
 
 		<?php 
@@ -60,34 +52,44 @@
 				  				<a class="bignav-title"  href="index.php?page=lines"><i class="fa fa-chain-broken" aria-hidden="true"></i>
 线路管理</a>
 				  			</div>
+				  			<?php
+				  			if(is_current_user_can_see(1)){
+				  			?>
+					  			<div class="bignav-box">
+					  				<a class="bignav-title" href="index.php?page=dologs"><i class="fa fa-file-o" aria-hidden="true"></i>
+操作日志</a>
+					  			</div>
+					  		<?php
+					  		}
+					  		?>
 				  		</div>
 				  	</div>
 				  	<div class="col-md-9">
 				  		<div class="home-box widget">
-				  			<h3>最近报警信息(<a href="index.php?page=excel&action=alarmslog">更多</a>)</h3>
+				  			<h3>最近报警信息(<a href="index.php?page=excel&action=alarmslog">更多</a>&nbsp;|&nbsp;<a href="index.php?page=excel&action=historieslog">历史</a>)</h3>
 				  		</div>
 				  			<?php 
 				  			$alarms=$mydb->get_last_alarms();
 				  			if($alarms){
 				  			?>
-				  			<table class="table striped table-alarmslist">
-								<thead><tr>
-									<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th>
-								</tr></thead>
-								<tbody>
-									<?php
+				  						<table class="table striped table-alarmslist">
+					<thead><tr>
+						<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th><th>所在杆塔与线路<th/>
+					</tr></thead>
+					<tbody>
+						<?php
 
-											foreach ($alarms as $alarm) {
-												$html='';
-												$html.='<tr><td>'.$alarm['dev_number'].'</td><td>'.$alarm['action_time'].'</td><td>'.$alarm['action_num'].'</td><td>'.$alarm['i_num'].'</td><td>'.$alarm['tem'].'</td><td>'.$alarm['hum'].'</td></tr>';
-												echo $html;
-											}
-									?>
-								</tbody>
-								<tfoot><tr>
-									<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th>
-								</tr></tfoot>
-							</table>
+						foreach ($alarms as $alarm) {
+							$html='';
+							$html.='<tr><td><a href="index.php?page=charts&devnum='.$alarm['dev_number'].'" target="_blank">'.$alarm['dev_number'].'</a></td><td>'.$alarm['action_time'].'</td><td>'.$alarm['action_num'].'</td><td>'.$alarm['i_num'].'</td><td>'.$alarm['tem'].'</td><td>'.$alarm['hum'].'</td><td>'.$alarm['group_loc_name'].'<br />'.$alarm['line_name'].'-'.$alarm['dev_phase'].'</td></tr>';
+							echo $html;
+						}
+						?>
+					</tbody>
+					<tfoot><tr>
+						<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th><th>所在杆塔与线路<th/>
+					</tr></tfoot>
+				</table>
 							<?php
 							}
 							else{
@@ -102,8 +104,7 @@
 				</div>
 					
 				</div>
-			</div>
-	    </div>
+		</div>
 	
 		<?php get_footer();?>
     

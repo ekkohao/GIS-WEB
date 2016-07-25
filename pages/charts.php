@@ -4,10 +4,12 @@
 <head >
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="bookmark" href="favicon.ico"/>
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/datetimepick.css" rel="stylesheet" />
-    <link rel="stylesheet" id="fontawesome-css" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css" type="text/css" media="all">
+    <link rel="stylesheet" id="fontawesome-css" href="css/font-awesome.min.css" type="text/css" media="all">
  
 
     <title>图表数据分析</title>

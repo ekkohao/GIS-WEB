@@ -15,6 +15,7 @@
 					}
 					?>
 					<li class="navto-monitor<?php echo ($_GET['page']=='monitor')?" active":""; ?>"><a href="index.php?page=monitor">在线监测 </a></li>
+					<li class="navto-help<?php echo ($_GET['page']=='help')?" active":""; ?>"><a href="index.php?page=help">帮助 </a></li>
 			</ul></nav>
 			<div class="login-info-bar pull-left">
 				<div class="pull-right">
@@ -27,6 +28,7 @@
 					</span>
 					<i class="fa fa-caret-down" aria-hidden="true"></i>
 					<ul class="tohie submenu">
+						<li><a href="index.php?page=users&action=editself">修改资料</a></li>
 						<li><a href="login.php?action=logout">注销</a></li>
 					</ul>
 				</div>

@@ -12,7 +12,7 @@ $(document).ready(function(){
 	var dev_haschange=false;
 	var gro_haschange=false;
 	$('.form-newdev #selectGroup').change(function(){
-		updateLine($(this).val());
+		updateLine($(this).val(),0);
 	});
 	$('.form-newdev').submit(function(e){
 		var mode=0;
@@ -88,7 +88,7 @@ $(document).ready(function(){
 		        }
 		 });
 	})
-	function updateLine(groupId,hasselect=0){
+	function updateLine(groupId,hasselect){
 		var sL=$(".form-newdev #selectLine");
 		sL.children(".error").html("");
 		if(groupId=='0'){
@@ -261,7 +261,7 @@ $(document).ready(function(){
 		        		else{
 		        			$('.form-newgro .success-msg').html("杆塔["+gro_name+"]添加成功").show();
 		        			$('.form-newdev #selectGroup').append('<option selected="selected" class="'+t.data.gro_id+'" value="'+t.data.gro_id+'">'+gro_loc+'-'+gro_name+'</option>');
-		        			updateLine(t.data.gro_id);
+		        			updateLine(t.data.gro_id,0);
 
 		        		}
 		        		dev_haschange=true;

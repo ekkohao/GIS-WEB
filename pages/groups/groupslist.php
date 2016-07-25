@@ -2,6 +2,7 @@
 <?php 
 if(is_current_user_can_see(3)){
 ?>
+	<p><small>显示所有杆塔信息，列表中线路名称下方的圆圈代表了设备的绑定状态，红色为未绑定设备，绿色为已绑定设备，鼠标放上去可以显示设备编号</small></p>
 	<div class="btn-group">
 		<a id="add_group" href="index.php?page=groups&action=newgro" class="btn btn-success">新增杆塔 </a>
 	</div>

@@ -1,4 +1,4 @@
-﻿body {
+body {
     background-color: #f8f6f6;
     font-family: "Microsoft YaHei","serif","sans-serif","cursive","fantasy","monospace";
 }
@@ -193,6 +193,7 @@ table.table-userlist>tbody .notsend{
     min-width: 88px;
     font-weight: bold;
     border-radius: 3px;
+    z-index: 99;
 }
 #header .login-info-bar ul.submenu li{
     float: none;
@@ -585,7 +586,7 @@ table.table-userlist>tbody .notsend{
 
 /*百度map*/
 #map-box{
-    height: 1100px;
+    height: 700px;
     width:100%;
 }
 #map-box .BMap_bubble_title{
@@ -607,9 +608,52 @@ table.table-userlist>tbody .notsend{
 #map-box .BMap_bubble_content a:hover{
     color:#2285CC;
 }
+#map-box .warning-title{
+    animation: warning-one 5s infinite;
+    -moz-animation: warning-one 5s infinite; /* Firefox */
+    -webkit-animation: warning-one 5s infinite;  /* Safari 和 Chrome */
+    -o-animation: warning-one 5s infinite;   
+}
 .btn-listen{
     display: inline-block;
     height: 30px;
     line-height: 15px;
     margin-top:-5px;
+}
+
+/*动画定义*/
+@keyframes warning-one
+{
+0%   {color: red;}
+25%  {color: yellow;}
+50%  {color: blue;}
+75%  {color: green;}
+100% {color: red; }
+}
+
+@-moz-keyframes warning-one /* Firefox */
+{
+0%   {color: red;}
+25%  {color: yellow;}
+50%  {color: blue;}
+75%  {color: green;}
+100% {color: red; }}
+}
+
+@-webkit-keyframes warning-one /* Safari 和 Chrome */
+{
+0%   {color: red;}
+25%  {color: yellow;}
+50%  {color: blue;}
+75%  {color: green;}
+100% {color: red; }
+}
+
+@-o-keyframes warning-one /* Opera */
+{
+0%   {color: red;}
+25%  {color: yellow;}
+50%  {color: blue;}
+75%  {color: green;}
+100% {color: red; }
 }
