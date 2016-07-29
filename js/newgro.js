@@ -187,6 +187,7 @@ $(document).ready(function(){
 		        			$('.form-newgro #selectLine'+which_line+' option[value='+line_id+']').text(line_name);
 		        			$('.form-newgro #selectLine'+(which_line%2+1)+' option[value='+line_id+']').text(line_name);
 		        		}
+		        		$('.form-newgro #selectLine'+which_line).next('label').find('a.edit-line').show();
 		        		haschange=true;
 		        		$('.form-addline .success-msg').html("线路["+line_name+"]"+mode_arr[line_add_mode]+"成功").show();
 		        		btn.attr('disabled',false);

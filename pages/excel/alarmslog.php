@@ -23,7 +23,7 @@
 				<?php } ?>
 				<table class="table striped table-alarmslist">
 					<thead><tr>
-						<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th><th>所在杆塔与线路<th/>
+						<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th><th>所在杆塔与线路</th>
 					</tr></thead>
 					<tbody>
 						<?php
@@ -36,7 +36,7 @@
 						?>
 					</tbody>
 					<tfoot><tr>
-						<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th><th>所在杆塔与线路<th/>
+						<th>报警设备</th><th>报警时间</th><th>动作次数</th><th>泄漏电流</th><th>温度</th><th>湿度</th><th>所在杆塔与线路</th>
 					</tr></tfoot>
 				</table>
 				<?php 

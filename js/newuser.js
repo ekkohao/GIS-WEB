@@ -76,6 +76,13 @@ $(document).ready(function(){
 		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
 		        		$('.form-newuser .success-msg').html("用户["+user_name+"]"+modeName[mode]+"成功").show();
 		        		btn.attr('disabled',false);
+		        		old_user_name=user_name;
+		        		old_passwd=passwd;
+		        		old_passwd2=passwd2;
+		        		old_user_role=user_role;
+		        		old_user_phone=user_phone;
+		        		old_is_send=is_send;
+		        		old_user_email=user_email;
 		        		return;
 		        	}
 		        	else {

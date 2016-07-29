@@ -29,7 +29,8 @@
             <div class="widget">
                 <h3><i class="icon-signer"></i>
                     曲线分析
-                    <span class="pull-right line-info"><i class="icon-info-sign"></i></span>
+                    <span class="pull-right line-info"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+</span>
                     <span class="info-box">
                         提示：<br />
                         1.按住&lt;shift&gt;点击可以平移<br />
@@ -100,7 +101,8 @@
                 </div>
                 <div class="form-group mode-select">
                     <label>模式选择：
-                        <span class="pull-right line-info"><i class="icon-info-sign"></i></span>
+                        <span class="pull-right line-info"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+</span>
                         <span class="info-box">
                             在模式二下，X轴将对应实际的时间，而不是模式一下固定的间隔
                         </span>

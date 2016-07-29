@@ -593,7 +593,7 @@ class db{
 		return $rows;
 	}
 	public function get_all_groups_coor_index_line_id(){
-		$this->queries="SELECT groups.group_id,groups.coor_long,groups.coor_lat,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
+		$this->queries="SELECT groups.group_id,groups.coor_long,groups.coor_lat,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.coor_long,groups.coor_lat";
 		$rows=$this->get_rows();
 		$rerows=null;
 		if($rows)
