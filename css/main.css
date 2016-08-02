@@ -17,13 +17,21 @@ body a:focus {
 .tohide{
     display: none;
 }
+.pagination > li >span{
+    color: #777;
+}
+.pagination > li >span:hover{
+    color: #777;
+    background-color: #fff;
+    cursor: default;
+}
 label.input-required::after{
     display: block;
     width:0px;
     overflow-x: visible;
     content: "*";
     float:right;
-    color:red;
+    color:#FF0000;
     font-size: 18px;
 
 }
@@ -122,10 +130,10 @@ table.table > tfoot > tr > th{
 	border-top: 1px solid #e5e5e5;
 }
 table.table-userlist>tbody .issend{
-    color:green;
+    color:#3BAD09;
 }
 table.table-userlist>tbody .notsend{
-    color:red;
+    color:#FF0000;
 }
 
 /**
@@ -305,10 +313,10 @@ table.table-userlist>tbody .notsend{
     min-height: 27px;
 }
 .widget form span.error,.pop-box form span.error,.pop-box .msgbox span.error,.form-login span.error{
-    color:red;
+    color:#FF0000;
 }
 .widget form span.error.success-msg,.pop-box form span.error.success-msg,.pop-box .msgbox span.success-msg{
-    color:green;
+    color:#3BAD09;
 }
 .widget > h3 {
     font-size: 18px;
@@ -624,36 +632,36 @@ table.table-userlist>tbody .notsend{
 /*动画定义*/
 @keyframes warning-one
 {
-0%   {color: red;}
-25%  {color: yellow;}
-50%  {color: blue;}
-75%  {color: green;}
-100% {color: red; }
+0%   {color: #FF0000;}
+25%  {color: #8B5A00;}
+50%  {color: #009ACD;}
+75%  {color: #3BAD09;}
+100% {color: #FF0000; }
 }
 
 @-moz-keyframes warning-one /* Firefox */
 {
-0%   {color: red;}
-25%  {color: yellow;}
-50%  {color: blue;}
-75%  {color: green;}
-100% {color: red; }}
+0%   {color: #FF0000;}
+25%  {color: #8B5A00;}
+50%  {color: #009ACD;}
+75%  {color: #3BAD09;}
+100% {color: #FF0000; }}
 }
 
 @-webkit-keyframes warning-one /* Safari 和 Chrome */
 {
-0%   {color: red;}
-25%  {color: yellow;}
-50%  {color: blue;}
-75%  {color: green;}
-100% {color: red; }
+0%   {color: #FF0000;}
+25%  {color: #8B5A00;}
+50%  {color: #009ACD;}
+75%  {color: #3BAD09;}
+100% {color: #FF0000; }
 }
 
 @-o-keyframes warning-one /* Opera */
 {
-0%   {color: red;}
-25%  {color: yellow;}
-50%  {color: blue;}
-75%  {color: green;}
-100% {color: red; }
+0%   {color: #FF0000;}
+25%  {color: #8B5A00;}
+50%  {color: #009ACD;}
+75%  {color: #3BAD09;}
+100% {color: #FF0000; }
 }

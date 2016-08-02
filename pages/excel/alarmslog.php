@@ -40,6 +40,9 @@
 					</tr></tfoot>
 				</table>
 				<?php 
+				$pgn_html=$mydb->__get("pgn_html");
+				if(!empty($pgn_html))
+					echo $pgn_html;
 			}
 			else{
 				?>

@@ -119,7 +119,7 @@ function get_head(){
 	$html.='<link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" media="all">';
 	$html.='<link rel="stylesheet" href="css/main.css">';
 	$html.='<script type="text/javascript" src="js/jquery.js"></script>';
-	$html.='<title>科鼎地理信息服务系统</title>';
+	$html.='<title>线路型避雷器在线监测系统</title>';
 	$html.='</head>';
 	echo $html;
 }

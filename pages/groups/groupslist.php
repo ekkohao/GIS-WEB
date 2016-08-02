@@ -43,6 +43,9 @@ if($groups&&count($groups)>0){
 	</table>
 	
 <?php 
+	$pgn_html=$mydb->__get("pgn_html");
+	if(!empty($pgn_html))
+		echo $pgn_html;
 }
 else{
 ?>

@@ -48,8 +48,10 @@ if($devs&&count($devs)>0){
 			<th><input id="cb-select-all" type="hidden"></th><th>设备编号</th><th>设备相位</th><th>所属杆塔</th><th>所在线路</th>
 		</tr></tfoot>
 	</table>
-
-<?php 
+<?php
+	$pgn_html=$mydb->__get("pgn_html");
+	if(!empty($pgn_html))
+		echo $pgn_html;
 }
 else{
 ?>

@@ -37,7 +37,11 @@ if($lines&&count($lines)>0){
 			<th><input id="cb-select-all" type="hidden"></th><th>线路名</th><th>绑定杆塔</th>
 		</tr></tfoot>
 	</table>
+
 <?php 
+	$pgn_html=$mydb->__get("pgn_html");
+	if(!empty($pgn_html))
+		echo $pgn_html;
 }
 else{
 ?>

@@ -1,4 +1,5 @@
 <?php
+require_once ABSPATH."/include/pagination.class.php";
 //数据库接口封装
 class db{
 	//保存查询结果或查询是否成功的布尔值
@@ -10,6 +11,9 @@ class db{
 	//设置数据库重连次数
 	protected $last_errors=null;
 	//protected $reconnect_retries = 5;
+	//所有的结果行
+	protected $total_results;
+	protected $pgn_html=null;
 	//数据库前缀
 	var $prefix = '';
 	//数据库连接句柄
@@ -295,7 +299,7 @@ class db{
 			if($this->is_use_mysqli)
 				$result=$this->get_result();
 			if(!$result)
-				$err[$i++]=("删除失败失败，请稍后再试");
+				$err[$i++]="删除失败失败，请稍后再试";
 			else{
 				global $__USER;
 				$this->add_dolog($__USER['user_name']."删除了设备".$dev['dev_number']);
@@ -342,7 +346,11 @@ class db{
 	}
 	//返回所有设备信息数组，组合了杆塔和线路信息
 	public function get_all_devs(){
-		$this->queries ="SELECT * FROM devs";
+		$this->queries ="SELECT COUNT(*) FROM devs";
+		$this->total_results=$this->get_total_results();
+		$devpgn=new pagination($this->total_results);
+		$this->pgn_html=$devpgn->showpgn();
+		$this->queries ="SELECT * FROM devs ORDER BY group_id ".$devpgn->limit;
 		$rows=$this->get_rows();
 		$groupsarr=$this->get_all_groups_info_index_id();
 		$linesarr=$this->get_all_lines_info_index_id();
@@ -505,7 +513,11 @@ class db{
 	}
 	//返回所有杆塔信息数组
 	public function get_all_groups(){
-		$this->queries="SELECT * FROM groups ORDER BY group_loc";
+		$this->queries="SELECT COUNT(*) FROM groups";
+		$this->total_results=$this->get_total_results();
+		$grouppgn=new pagination($this->total_results);
+		$this->pgn_html=$grouppgn->showpgn();
+		$this->queries="SELECT * FROM groups ORDER BY group_loc,group_name ".$grouppgn->limit;
 		$rows=$this->get_rows();
 		$linesarr=$this->get_all_lines_info_index_id();
 		$devnumsarr=$this->get_all_devs_num_index_line_id_gro_id_dev_phase();
@@ -712,7 +724,11 @@ class db{
 		return false;
 	}
 	public function get_all_lines(){
-		$this->queries="SELECT * FROM liness";
+		$this->queries="SELECT COUNT(*) FROM liness";
+		$this->total_results=$this->get_total_results();
+		$linepgn=new pagination($this->total_results);
+		$this->pgn_html=$linepgn->showpgn();
+		$this->queries="SELECT * FROM liness ".$linepgn->limit;
 		return $this->get_rows();
 	}
 	public function get_all_lines_info_index_id(){
@@ -892,7 +908,11 @@ class db{
 
 	}
 	public function get_all_users(){
-		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_role<>1 ORDER BY user_role";
+		$this->queries="SELECT COUNT(*) FROM users";
+		$this->total_results=$this->get_total_results()-1;
+		$userpgn=new pagination($this->total_results);
+		$this->pgn_html=$userpgn->showpgn();
+		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_role<>1 ORDER BY user_role ".$userpgn->limit;
 		$rows=$this->get_rows();
 		if(!$rows)
 			return null;
@@ -900,7 +920,11 @@ class db{
 	}
 
 	public function get_alarms(){
-		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC";
+		$this->queries="SELECT COUNT(*) FROM alarms";
+		$this->total_results=$this->get_total_results();
+		$alarmpgn=new pagination($this->total_results);
+		$this->pgn_html=$alarmpgn->showpgn();
+		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC ".$alarmpgn->limit;
 		$rows=$this->get_rows();
 		$devsarr=$this->get_all_devs_info_index_id();
 		$groupsarr=$this->get_all_groups_info_index_id();
@@ -958,7 +982,11 @@ class db{
 	}
 
 	public function get_histories(){
-		$this->queries="SELECT * FROM histories ORDER BY action_time DESC";
+		$this->queries="SELECT COUNT(*) FROM histories";
+		$this->total_results=$this->get_total_results();
+		$historypgn=new pagination($this->total_results);
+		$this->pgn_html=$historypgn->showpgn();
+		$this->queries="SELECT * FROM histories ORDER BY action_time DESC ".$historypgn->limit;
 		$rows=$this->get_rows();
 		$devsarr=$this->get_all_devs_info_index_id();
 		$groupsarr=$this->get_all_groups_info_index_id();
@@ -1028,14 +1056,32 @@ class db{
 		return $err;
 	}
 
+	/*简述：添加用户操作日志
+	 *参数1：[string]需要显示的操作信息
+	 *返回：无
+	 */
 	protected function add_dolog($msg){
 		$this->queries="INSERT INTO dologs(do_msg) VALUES('".$msg."')";
 		$result=$this->get_result();
 	}
+
+	/*简述：获取用户操作日志
+	 *参数1：无
+	 *返回：[array]所有操作数组
+	 */
 	public function get_dologs(){
 		$this->queries="SELECT * FROM dologs ORDER BY do_time DESC";
 		$rows=$this->get_rows();
 		return $rows;
+	}
+	/*简述：
+	 *
+	 */
+	public function get_total_results(){
+		$rows=$this->get_rows();
+		if(empty($rows))
+			return 0;
+		return $rows[0][0];
 	}
 }
 ?>
