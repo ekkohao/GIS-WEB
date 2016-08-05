@@ -15,7 +15,7 @@ if($groups&&count($groups)>0){
 ?>
 	<table class="table striped table-grolist">
 		<thead><tr>
-			<th><input id="cb-select-all" type="hidden"></th><th>杆塔名</th><th>杆塔位置</th><th>所在线路1</th><th>所在线路2</th><th>坐标</th>
+			<th><input id="cb-select-all" type="hidden"></th><th>杆塔名</th><th>杆塔位置</th><th>所在线路1</th><th>所在线路2</th><th>坐标</th><th>管理小组</th>
 		</tr></thead>
 		<tbody>
 		<?php
@@ -32,13 +32,14 @@ if($groups&&count($groups)>0){
 			$html.= '<tr><td><input id="cb-select-'.$group['group_id'].'" type="hidden" value="'.$group['group_id'].'"><br />&nbsp;</td><td><strong>'.$group['group_name'].'</strong>';
 			if(is_current_user_can_see(3))
 				$html.='<div class="row-actions"><span class="edit"><a href="index.php?page=groups&action=editgro&groid='.$group['group_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div>';
-			$html.='</td><td><strong>'.$group['group_loc'].'</strong></td><td class="'.$tdclass1.'">'.$group['line_name'].'<br /><span class="line-circle"><i class="'.$iclass1.'" title="'.$group['dev_on_A'].'"></i><i class="'.$iclass2.'" title="'.$group['dev_on_B'].'"></i><i class="'.$iclass3.'" title="'.$group['dev_on_C'].'"></i></span></td><td class="'.$tdclass2.'">'.$group['line_name2'].'<br /><span class="line-circle"><i class="'.$iclass4.'" title="'.$group['dev_on_2A'].'"></i><i class="'.$iclass5.'" title="'.$group['dev_on_2B'].'"></i><i class="'.$iclass6.'" title="'.$group['dev_on_2C'].'"></i></span></td><td>经度：'.$group['coor_long'].'<br/>维度：'.$group['coor_lat'].'</td></tr>';
+			$html.='</td><td><strong>'.$group['group_loc'].'</strong></td><td class="'.$tdclass1.'">'.$group['line_name'].'<br /><span class="line-circle"><i class="'.$iclass1.'" title="'.$group['dev_on_A'].'"></i><i class="'.$iclass2.'" title="'.$group['dev_on_B'].'"></i><i class="'.$iclass3.'" title="'.$group['dev_on_C'].'"></i></span></td><td class="'.$tdclass2.'">'.$group['line_name2'].'<br /><span class="line-circle"><i class="'.$iclass4.'" title="'.$group['dev_on_2A'].'"></i><i class="'.$iclass5.'" title="'.$group['dev_on_2B'].'"></i><i class="'.$iclass6.'" title="'.$group['dev_on_2C'].'"></i></span></td><td>经度：'.$group['coor_long'].'<br/>维度：'.$group['coor_lat'].'</td>';
+			$html.='<td>'.$group['user_gname'].'</td></tr>';
 			echo $html;
 		}
 		?>
 		</tbody>
 		<tfoot><tr>
-			<th><input id="cb-select-all" type="hidden"></th><th>杆塔名</th><th>杆塔位置</th><th>所在线路1</th><th>所在线路2</th><th>坐标</th>
+			<th><input id="cb-select-all" type="hidden"></th><th>杆塔名</th><th>杆塔位置</th><th>所在线路1</th><th>所在线路2</th><th>坐标</th><th>管理小组</th>
 		</tr></tfoot>
 	</table>
 	

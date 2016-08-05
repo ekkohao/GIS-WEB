@@ -4,6 +4,7 @@ $(document).ready(function(){
 	var old_line_id1=$('.form-newgro #selectLine1').val();
 	var old_line_id2=$('.form-newgro #selectLine2').val();
 	var old_coor=$('.form-newgro #inputCoor').val();
+	var old_usergid=$('.form-newgro #selectUserGName').val();
 	var	commit_flag=false;
 	var	intV=10;
 	var haschange=false;
@@ -23,9 +24,10 @@ $(document).ready(function(){
 		var line_id1=$('.form-newgro #selectLine1').val().replace(/[ ]/g,"");
 		var line_id2=$('.form-newgro #selectLine2').val().replace(/[ ]/g,"");
 		var coor=$('.form-newgro #inputCoor').val().replace(/[ ]/g,"");
+		var usergid=$('.form-newgro #selectUserGName').val();
 		var reg =/^[-\+]?\d+(\.\d+)\,[-\+]?\d+(\.\d+)$/;
 		var hasError=0;
-		if(haschange==false&&mode==1&&old_gro_name==gro_name&&old_gro_loc==gro_loc&&old_line_id1==line_id1&&old_line_id2==line_id2&&old_coor==coor){
+		if(haschange==false&&mode==1&&old_gro_name==gro_name&&old_gro_loc==gro_loc&&old_line_id1==line_id1&&old_line_id2==line_id2&&old_coor==coor&&old_usergid==usergid){
 			$('.form-newgro .error-msg').html("新数据与旧数据相同");
 			$('.form-newgro span.error').show();
 			btn.attr('disabled',false);
@@ -53,7 +55,7 @@ $(document).ready(function(){
 			btn.attr('disabled',false);
 			return;
 		}
-		var data="gro_id="+gro_id+"&gro_name="+gro_name+"&gro_loc="+gro_loc+"&line_id1="+line_id1+"&line_id2="+line_id2+"&coor="+coor+"&mode="+mode;
+		var data="gro_id="+gro_id+"&gro_name="+gro_name+"&gro_loc="+gro_loc+"&line_id1="+line_id1+"&line_id2="+line_id2+"&coor="+coor+"&mode="+mode+"&usergid="+usergid;
 		$.ajax({
 		        type: "post",
 		        url: "pages/groups/newgroadd-ajax.php",
@@ -68,6 +70,7 @@ $(document).ready(function(){
 		        				old_gro_name=gro_name;
 								old_gro_loc=gro_loc;
 								old_line_id1=line_id1;
+								old_usergid==usergid;
 								old_line_id2=line_id2;
 								old_coor=coor;
 								haschange=false;

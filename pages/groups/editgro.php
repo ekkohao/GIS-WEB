@@ -97,7 +97,7 @@ $group=$mydb->get_group($_GET['groid']);
 					</label>
 				</div>
 			</div>
-					<div class="form-group">
+			<div class="form-group">
 				<label for="inputCoor" class="col-sm-3 control-label input-required">杆塔坐标</label>
 				<div class="col-sm-6">
 					<input type="text" class="form-control" id="inputCoor" placeholder="例如：12.3456,12.3456" required="required" value="<?php echo $group['coor_long'].','.$group['coor_lat']; ?>">
@@ -106,6 +106,26 @@ $group=$mydb->get_group($_GET['groid']);
 						&nbsp;&nbsp;&nbsp;&nbsp;<span class="error error-coor"></span>
 						<br />经纬度中间用英文半角逗号(,)隔开，且必须是小数
 					</label>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="selectUserGName" class="col-sm-3 control-label">管理小组</label>
+				<div class="col-sm-6">
+					<select class="form-control" id="selectUserGName">
+						<option<?php echo ($group['user_gid']==0)?' selected="selected"':''; ?> value="0">默认</option>
+						<?php
+						$usergroups=$mydb->get_all_usergroups();
+						if(!empty($usergroups))
+							foreach ($usergroups as $usergroup) {
+								$html= '<option';
+								if($group['user_gid']==$usergroup['user_gid'])
+									$html.=' selected="selected"';
+								$html.=' value="'.$usergroup['user_gid'].'">'.$usergroup['user_gname'].'</option>';
+								echo $html;
+							}
+						?>
+					</select>
+					<label>不分配小组则默认接收所有设备的报警信息<span class="error"></span></label>
 				</div>
 			</div>
 			<div class="form-group">

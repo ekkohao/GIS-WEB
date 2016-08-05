@@ -231,6 +231,102 @@ class db{
 		$this->last_errors['count']=$err_count;
 		$this->last_errors['errors']=$err_arr;
 	}
+	//重写表结果数组下标
+	public function get_reindex_table($table,$index,$cols='*'){
+		if(!is_array($cols))
+			$this->queries='SELECT '.$cols.','.$index.' FROM '.$table;
+		else{
+			$colss=implode(',',$cols);
+			$this->queries='SELECT '.$colss.','.$index.' FROM '.$table;
+		}
+		$rows=$this->get_rows();
+		if($rows==null)
+			return null;
+		$rerows=null;
+		$rerows[0]=null;
+		foreach ($rows as $row) {
+				$rerows[$row[$index]]=$row;
+		}
+		return $rerows;
+	}
+
+	//重写下标并将重复下标链接为字符串
+	public function get_reindex_string($table,$index,$cols){
+		if(!is_array($cols))
+			$this->queries='SELECT '.$cols.','.$index.' FROM '.$table;
+		else{
+			$colss=implode(',',$cols);
+			$this->queries='SELECT '.$colss.','.$index.' FROM '.$table;
+		}
+		$rows=$this->get_rows();
+		if($rows==null)
+			return null;
+		$rerows=null;
+		//$rerows[0]='无';
+		$i=0;
+		foreach ($rows as $row) {
+			if($row[$index]==0)
+				continue;
+			if(empty($rerows[$row[$index]])){
+				if(!is_array($cols))
+					$rerows[$row[$index]]=$row[$cols];
+				else{
+					$str='';
+					foreach ($cols as $col){
+						$str.='-';
+						$str.=$row[$col];
+					}
+					$rerows[$row[$index]]=substr($str,1);
+				}
+			}
+			else{
+				if(!is_array($cols)){
+					$rerows[$row[$index]].=', ';
+					$rerows[$row[$index]].=$row[$cols];
+				}
+				else{
+					$str='';
+					foreach ($cols as $col){
+						$str.='-';
+						$str.=$row[$col];			
+					}
+					$rerows[$row[$index]].=', ';
+					$rerows[$row[$index]].=substr($str,1);
+				}
+			}
+		}
+		return $rerows;
+	}
+	public function update($table,$arrays,$where){
+		$setstr='';
+		if(empty($arrays))
+			return false;
+		foreach ($arrays as $key => $value) 
+				$setstr.=",`$key`=$value";
+		$setstr=substr($setstr, 1);
+		$this->queries="UPDATE `$table` SET $setstr WHERE $where";
+		return $this->get_result();
+	}
+	/*简述：添加用户操作日志
+	 *参数1[string]：需要显示的操作信息
+	 *返回：无
+	 */
+	protected function add_dolog($msg){
+		$ip=get_ip();
+		$this->queries="INSERT INTO dologs(do_msg,do_ip) VALUES('".$msg."','".$ip."')";
+		$result=$this->get_result();
+	}
+
+	/*简述：获取用户操作日志
+	 *参数1：无
+	 *返回[array]：所有操作数组
+	 */
+	public function get_dologs(){
+		$this->set_pagination("dologs");
+		$this->queries="SELECT * FROM dologs ORDER BY do_time DESC ".$this->pgn['dologs']->limit;
+		$rows=$this->get_rows();
+		return $rows;
+	}
 	/**********************************************
 	 *dev
 	 *********************************************/
@@ -404,7 +500,7 @@ class db{
 	 *
 	 ************************************************************************************/
 	//-----------------------------------已规范化
-	public function add_group($group_name,$group_loc,$line_id=0,$line_id2=0,$coor_long,$coor_lat){
+	public function add_group($group_name,$group_loc,$line_id,$line_id2,$coor_long,$coor_lat,$user_gid){
 		$err=null;
 		$i=0;
 		if(!isset($group_name)||strlen($group_name)<1||!isset($group_loc)||strlen($group_loc)<1)
@@ -415,7 +511,7 @@ class db{
 			$err[$i++]="一个杆塔的两条线路不能相同";
 
 		if($i==0){
-			$this->queries="INSERT INTO groups(group_name,group_loc,line_id,line_id2,coor_long,coor_lat) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.",".$coor_long.",".$coor_lat.")";
+			$this->queries="INSERT INTO groups(group_name,group_loc,line_id,line_id2,coor_long,coor_lat,user_gid) VALUES('".$group_name."','".$group_loc."',".$line_id.",".$line_id2.",".$coor_long.",".$coor_lat.",".$user_gid.")";
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="添加线路失败，请稍后再试";
@@ -429,7 +525,7 @@ class db{
 		return false;
 	}
 	//----------------------------------已规范化
-	public function update_group($group_id,$group_name,$group_loc,$line_id=0,$line_id2=0,$coor_long,$coor_lat){
+	public function update_group($group_id,$group_name,$group_loc,$line_id,$line_id2,$coor_long,$coor_lat,$user_gid){
 		$err=null;
 		$i=0;
 		if(($o_gid=$this->get_group_id($group_name, $group_loc))&&$o_gid!=$group_id)
@@ -438,7 +534,7 @@ class db{
 			$err[$i++]="一个杆塔的两条线路不能相同";
 		if($i==0){
 			$group=$this->get_group($group_id);
-			$this->queries="UPDATE groups SET group_name='".$group_name."',group_loc='".$group_loc."',line_id=".$line_id.",line_id2=".$line_id2.",coor_long=".$coor_long.",coor_lat=".$coor_lat." WHERE group_id=".$group_id;
+			$this->queries="UPDATE groups SET group_name='".$group_name."',group_loc='".$group_loc."',line_id=".$line_id.",line_id2=".$line_id2.",coor_long=".$coor_long.",coor_lat=".$coor_lat.",user_gid=".$user_gid." WHERE group_id=".$group_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改线路失败，请稍后再试";
@@ -515,6 +611,7 @@ class db{
 		$rows=$this->get_rows();
 		$linesarr=$this->get_all_lines_info_index_id();
 		$devnumsarr=$this->get_all_devs_num_index_line_id_gro_id_dev_phase();
+		$usergrouparr=$this->get_all_usergroups_index_usergid();
 		$linesarr[0]['line_name']='未绑定';
 		$rerows=null;
 		$i=0;
@@ -527,7 +624,8 @@ class db{
 			$rerows[$i]['dev_on_C']=isset($devnumsarr[$row['line_id']][$row['group_id']]['C相'])?$devnumsarr[$row['line_id']][$row['group_id']]['C相']:'无';
 			$rerows[$i]['dev_on_2A']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['A相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['A相']:'无';
 			$rerows[$i]['dev_on_2B']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['B相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['B相']:'无';
-			$rerows[$i++]['dev_on_2C']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['C相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['C相']:'无';
+			$rerows[$i]['dev_on_2C']=isset($devnumsarr[$row['line_id2']][$row['group_id']]['C相'])?$devnumsarr[$row['line_id2']][$row['group_id']]['C相']:'无';
+			$rerows[$i++]['user_gname']=$usergrouparr[$row['user_gid']]['user_gname'];
 		}
 		return $rerows;
 	}
@@ -585,8 +683,21 @@ class db{
 			return $row['line_name'];
 		return "已删除";
 	}
-	//获取一个数组，数组下标为线路id，相应值为绑定杆塔的字符串
-	public function get_arr_groups_on_line(){
+	// //获取一个数组，数组下标为线路id，相应值为绑定杆塔的字符串
+	// public function get_arr_groups_on_line(){
+	// 	$this->queries="SELECT groups.group_name,groups.group_loc,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
+	// 	$results=$this->get_rows();
+	// 	if(!$results)
+	// 		return null;
+	// 	foreach ($results as $result) {
+	// 		if(!isset($rows[$result['line_id']]))
+	// 			$rows[$result['line_id']]="";
+	// 		$rows[$result['line_id']].=$result['group_loc'].'—'.$result['group_name'].'，';
+	// 	}
+	// 	return $rows;
+	// }
+		//获取一个数组，数组下标为线路id，相应值为绑定杆塔的字符串
+	public function get_all_groups_index_line(){
 		$this->queries="SELECT groups.group_name,groups.group_loc,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
 		$results=$this->get_rows();
 		if(!$results)
@@ -598,6 +709,7 @@ class db{
 		}
 		return $rows;
 	}
+
 	public function get_all_groups_coor_index_line_id(){
 		$this->queries="SELECT groups.group_id,groups.coor_long,groups.coor_lat,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.coor_long,groups.coor_lat";
 		$rows=$this->get_rows();
@@ -742,6 +854,105 @@ class db{
 		return $rows;
 	}
 	/*******************************************
+	 *USERGROUPS
+	 *******************************************/
+	public function get_usergroup($user_gid){
+		$this->queries="SELECT * FROM usergroups WHERE user_gid='".$user_gid."'";
+		$rows=$this->get_rows();
+		if($rows!=null)
+			return $rows[0];
+		return false;
+	}
+	public function get_all_usergroups(){
+		$this->set_pagination("usergroups");
+		$this->queries='SELECT * FROM usergroups '.$this->pgn['usergroups']->limit;
+		$usergroups=$this->get_rows();
+		return $usergroups;
+	}
+	public function get_all_usergroups_index_usergid(){
+		$this->queries='SELECT * FROM usergroups';
+		$usergroups=$this->get_rows();
+		$rerows=null;
+		$rerows[0]['user_gname']='默认';
+		if($usergroups==null)
+			return $rerows;
+		foreach ($usergroups as $usergroup){
+			$rerows[$usergroup['user_gid']]=$usergroup;
+		}
+		
+		return $rerows;
+	}
+	public function get_usergid($user_gname){
+		$this->queries="SELECT user_gid FROM usergroups WHERE user_gname='".$user_gname."'";
+		$rows=$this->get_rows();
+		if($rows!=null)
+			return $rows[0]['user_gid'];
+		return false;
+	}
+	public function add_usergroup($user_gname){
+		$err=null;
+		$i=0;
+		if ($this->get_usergid($user_gname))
+			$err[$i++]=("用户小组名已存在");
+		if($i==0){
+			$this->queries="INSERT INTO usergroups(user_gname) VALUES('".$user_gname."')";
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]=("添加用户小组失败，请联系管理员");
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name']."添加了用户组".$user_gname);
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;	
+	}
+	public function update_usergroup($user_gid,$user_gname){
+		$err=null;
+		$i=0;
+		if(empty($user_gname))
+			$err[$i++]='用户小组名不能为空';
+		if($this->get_usergid($user_gname))
+			$err[$i++]='修改小组名失败，已有相同名字的小组';
+		if($i==0){
+			$this->queries="UPDATE `usergroups` SET user_gname='".$user_gname."' WHERE user_gid=".$user_gid;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]=("修改小组失败");
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name'].'修改了小组'.$user_gname);
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;
+	}
+	public function delete_usergroup($user_gid){
+		$err=null;
+		$i=0;
+		if($this->get_usergroup($user_gid)==null)
+			$err[$i++]="用户小组不存在或已删除";
+		if($i==0){
+			$usergroup=$this->get_usergroup($user_gid);
+			$this->queries="DELETE FROM usergroups WHERE user_gid=".$user_gid;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]="删除用户小组失败，请联系管理员";
+			else{
+				global $__USER;
+				$this->update('users',array('user_gid'=>'0'),'user_gid='.$user_gid);
+				$this->update('groups',array('user_gid'=>'0'),'user_gid='.$user_gid);
+				$this->add_dolog($__USER['user_name']."删除了用户小组".$usergroup['user_gname']);
+				return true;
+			}
+		}		
+		$this->set_errors($i,$err);
+		return false;
+	}
+
+	/*******************************************
 	 *USERS
 	 *参数user_role[int]：1-系统管理员，2-超级管理员，3-设备管理员，5-普通用户
 	 *参数is_send[int]：0-不转发，1-转发
@@ -752,14 +963,14 @@ class db{
 	 *参数表：1[string]用户名，2[string]未加密密码，3[int]身份类型，4[string]手机，5[string]邮箱，6[int]是否转发短信
 	 *返回[bool]：true-添加成功；false-添加失败
 	 **/
-	public function add_user($user_name,$passwd,$user_role=5,$user_phone=0,$user_email=null,$is_send=0){
+	public function add_user($user_name,$passwd,$user_role=5,$user_gid=0,$user_phone=0,$user_email=null,$is_send=0){
 		$err=null;
 		$i=0;
 		$passwdd=md5($passwd);
 		if ($this->has_user_name($user_name))
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="INSERT INTO users(user_name,passwd,user_role,user_phone,user_email,is_send,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."',".$user_role.",'".$user_phone."','".$user_email."',".$is_send.",NOW(),NOW())";
+			$this->queries="INSERT INTO users(user_name,passwd,user_role,user_gid,user_phone,user_email,is_send,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."',".$user_role.",".$user_gid.",'".$user_phone."','".$user_email."',".$is_send.",NOW(),NOW())";
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]=("添加用户失败，请联系管理员");
@@ -777,14 +988,14 @@ class db{
 	 *参数表：1[int]用户ID，2[string]用户名，3[string]未加密新密码，4[int]身份类型，5[string]手机，6[string]邮箱，7[int]是否转发短信
 	 *返回[bool]-true，编辑成功-false，编辑失败
 	 **/
-	public function update_user($user_id,$user_name,$passwd,$user_role,$user_phone,$user_email,$is_send){
+	public function update_user($user_id,$user_name,$passwd,$user_role,$user_gid,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
 		$passwdd=md5($passwd);
 		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
+			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_gid=".$user_gid.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改用户失败，请联系管理员";
@@ -804,14 +1015,13 @@ class db{
 	 *参数表：1[int]用户ID，2[string]新用户名，3[int]用户角色，4[string]手机，5[string]邮箱，6[int]是否转发短信
 	 *返回[bool]：true-编辑成功；false-编辑失败
 	 **/
-	public function update_user_nopwd($user_id,$user_name,$user_role,$user_phone,$user_email,$is_send){
+	public function update_user_nopwd($user_id,$user_name,$user_role,$user_gid,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
-		$passwdd=md5($passwd);
 		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
+			$this->queries="UPDATE users SET user_name='".$user_name."',user_role=".$user_role.",user_gid=".$user_gid.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
 			$result=$this->get_result();
 			if(!$result)
 				$err[$i++]="修改用户失败，请联系管理员";
@@ -934,7 +1144,7 @@ class db{
 	}
 
 	public function get_user($user_id){
-		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_id=".$user_id;
+		$this->queries="SELECT * FROM users WHERE user_id=".$user_id;
 		$rows=$this->get_rows();
 		if($rows!=null)
 			return $rows[0];
@@ -943,13 +1153,20 @@ class db{
 	}
 	public function get_all_users(){
 		$this->set_pagination("users");
-		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_role<>1 ORDER BY user_role ".$this->pgn['users']->limit;
+		$this->queries="SELECT * FROM users WHERE user_role<>1 ORDER BY user_role ".$this->pgn['users']->limit;
 		$rows=$this->get_rows();
 		if(!$rows)
 			return null;
+		$usergroups=$this->get_all_usergroups_index_usergid();
+		foreach ($rows as $key => $row) {
+			$rows[$key]['user_gname']=$usergroups[$row['user_gid']]['user_gname'];
+		}
 		return $rows;
 	}
 
+	/******************
+	*ALARMS
+	******************/
 	public function get_alarms(){
 		$this->set_pagination("alarms");
 		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC ".$this->pgn['alarms']->limit;
@@ -1079,27 +1296,6 @@ class db{
 			}
 		}
 		return $err;
-	}
-
-	/*简述：添加用户操作日志
-	 *参数1[string]：需要显示的操作信息
-	 *返回：无
-	 */
-	protected function add_dolog($msg){
-		$ip=get_ip();
-		$this->queries="INSERT INTO dologs(do_msg,do_ip) VALUES('".$msg."','".$ip."')";
-		$result=$this->get_result();
-	}
-
-	/*简述：获取用户操作日志
-	 *参数1：无
-	 *返回[array]：所有操作数组
-	 */
-	public function get_dologs(){
-		$this->set_pagination("dologs");
-		$this->queries="SELECT * FROM dologs ORDER BY do_time DESC ".$this->pgn['dologs']->limit;
-		$rows=$this->get_rows();
-		return $rows;
 	}
 	/*简述：设置某个数据表的分页码
 	 *参数1[string]：需要设置的数据表名

@@ -10,14 +10,14 @@ $data=null;
 $errorsinfo=null;
 
 if($_POST['mode']==0){
-	$isadd=$mydb->add_group($_POST['gro_name'],$_POST['gro_loc'],$_POST['line_id1'],$_POST['line_id2'],$coor[0],$coor[1]);
+	$isadd=$mydb->add_group($_POST['gro_name'],$_POST['gro_loc'],$_POST['line_id1'],$_POST['line_id2'],$coor[0],$coor[1],$_POST['usergid']);
 	$errorsinfo=$mydb->__get('last_errors');
 	if($isadd)
 		$data['gro_id']=$mydb->get_group_id($_POST['gro_name'],$_POST['gro_loc']);
 
 }
 elseif($_POST['mode']==1){
-	$mydb->update_group($_POST['gro_id'],$_POST['gro_name'],$_POST['gro_loc'],$_POST['line_id1'],$_POST['line_id2'],$coor[0],$coor[1]);
+	$mydb->update_group($_POST['gro_id'],$_POST['gro_name'],$_POST['gro_loc'],$_POST['line_id1'],$_POST['line_id2'],$coor[0],$coor[1],$_POST['usergid']);
 	$errorsinfo=$mydb->__get('last_errors');
 }
 elseif($_POST['mode']==2){

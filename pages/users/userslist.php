@@ -1,6 +1,7 @@
 <p><small>显示用户列表，手机号红色表示不转发短信，绿色表示转发短信</small></p>
 <div class="btn-group">
 	<a href="index.php?page=users&action=newuser" class="btn btn-success">新用户</a>
+	<a href="index.php?page=users&action=usergroups" class="btn btn-info">用户小组</a>
 </div>
 <?php 
 global $mydb;
@@ -10,7 +11,7 @@ if($users&&count($users)>0){
 ?>
 	<table class="table striped table-userlist">
 		<thead><tr>
-			<th class="select"><input id="cb-select-all" type="hidden"></th><th>用户名</th><th>用户权限</th><th>手机</th><th>接收报警短信</th><th>邮箱</th><th>上次登录</th><th>注册时间</th>
+			<th class="select"><input id="cb-select-all" type="hidden"></th><th>用户名</th><th>用户权限</th><th>小组</th><th>手机</th><th>接收报警短信</th><th>邮箱</th><th>上次登录</th><th>注册时间</th>
 		</tr></thead>
 		<tbody>
 		<?php
@@ -28,13 +29,13 @@ if($users&&count($users)>0){
 			$html.= '<tr><td><input id="cb-select-'.$user['user_id'].'" type="hidden" value="'.$user['user_id'].'"><br />&nbsp;</td><td><strong>'.$user['user_name'].'</strong>';
 			if($user['user_role']>$__USER['user_role'])
 				$html.='<div class="row-actions"><span class="edit"><a href="index.php?page=users&action=edituser&uid='.$user['user_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div>';
-			$html.='</td><td>'.$realrole[$user['user_role']].'</td><td class="'.$phoneclass.'">'.$user['user_phone'].'</td><td>'.$phonetd.'</td><td>'.$user['user_email'].'</td><td>'.$user['last_login_time'].'</td><td>'.$user['register_time'].'</td></tr>';
+			$html.='</td><td>'.$realrole[$user['user_role']].'</td><td>'.$user['user_gname'].'</td><td class="'.$phoneclass.'">'.$user['user_phone'].'</td><td>'.$phonetd.'</td><td>'.$user['user_email'].'</td><td>'.$user['last_login_time'].'</td><td>'.$user['register_time'].'</td></tr>';
 			echo $html;
 		}
 		?>
 		</tbody>
 		<tfoot><tr>
-			<th class="select"><input id="cb-select-all" type="hidden"></th><th>用户名</th><th>用户权限</th><th>手机</th><th>接收报警短信</th><th>邮箱</th><th>上次登录</th><th>注册时间</th>
+			<th class="select"><input id="cb-select-all" type="hidden"></th><th>用户名</th><th>用户权限</th><th>小组</th><th>手机</th><th>接收报警短信</th><th>邮箱</th><th>上次登录</th><th>注册时间</th>
 		</tr></tfoot>
 	</table>
 <?php

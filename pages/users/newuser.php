@@ -35,6 +35,23 @@
 			</div>
 		</div>
 		<div class="form-group">
+			<label for="selectUserGName" class="col-sm-3 control-label">小组</label>
+			<div class="col-sm-6">
+				<select class="form-control" id="selectUserGName">
+					<option selected="selected" value="0">默认</option>
+					<?php
+					global $mydb;
+					$usergroups=$mydb->get_all_usergroups();
+					if(!empty($usergroups))
+						foreach ($usergroups as $usergroup) {
+							echo '<option value="'.$usergroup['user_gid'].'">'.$usergroup['user_gname'].'</option>';
+						}
+					?>
+				</select>
+				<label>不分配小组则默认接收所有设备的报警信息<span class="error"></span></label>
+			</div>
+		</div>
+		<div class="form-group">
 			<label for="inputPhone" class="col-sm-3 control-label">用户手机</label>
 			<div class="col-sm-6">
 				<input type="text" class="form-control" id="inputPhone" placeholder="手机">

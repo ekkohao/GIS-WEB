@@ -3,6 +3,7 @@ $(document).ready(function(){
 	var old_passwd=$(".form-newuser #inputPasswd").val();
 	var old_passwd2=$(".form-newuser #inputPasswd2").val();
 	var old_user_role=$(".form-newuser #selectUserRole").val();
+	var old_user_gid=$(".form-newuser #selectUserGName").val();
 	var old_user_phone=$(".form-newuser #inputPhone").val();
 	var old_is_send=$(".form-newuser #selectIsSend").val();
 	var old_user_email=$(".form-newuser #inputEmail").val();
@@ -13,6 +14,7 @@ $(document).ready(function(){
 		var passwd=$(".form-newuser #inputPasswd").val();
 		var passwd2=$(".form-newuser #inputPasswd2").val();
 		var user_role=$(".form-newuser #selectUserRole").val();
+		var user_gid=$(".form-newuser #selectUserGName").val();
 		var user_phone=$.trim($(".form-newuser #inputPhone").val());
 		var is_send=$(".form-newuser #selectIsSend").val();
 		var user_email=$.trim($(".form-newuser #inputEmail").val());
@@ -26,7 +28,7 @@ $(document).ready(function(){
 		if(mode==1){
 			user_id=$(".form-newuser #inputUID").val();
 		}
-		if(mode==1&&old_user_name==user_name&&old_passwd==passwd&&old_passwd2==passwd2&&old_user_role==user_role&&old_user_phone==user_phone&&old_is_send==is_send&&old_user_email==user_email){
+		if(mode==1&&old_user_name==user_name&&old_passwd==passwd&&old_passwd2==passwd2&&old_user_role==user_role&&old_user_gid==user_gid&&old_user_phone==user_phone&&old_is_send==is_send&&old_user_email==user_email){
 			$('.form-newuser .error-msg').html("未做任何修改").show();
 			btn.attr('disabled',false);
 			return;
@@ -63,7 +65,7 @@ $(document).ready(function(){
 			return;
 		}
 
-		var data={"mode":mode,"user_id":user_id,"user_name":user_name,"passwd":passwd,"user_role":user_role,"user_phone":user_phone,"is_send":is_send,"user_email":user_email};
+		var data={"mode":mode,"user_id":user_id,"user_name":user_name,"passwd":passwd,"user_role":user_role,"user_gid":user_gid,"user_phone":user_phone,"is_send":is_send,"user_email":user_email};
 		//console.log(data);
 		$.ajax({
 		        type: "post",
@@ -80,6 +82,7 @@ $(document).ready(function(){
 		        		old_passwd=passwd;
 		        		old_passwd2=passwd2;
 		        		old_user_role=user_role;
+		        		old_user_gid=user_gid;
 		        		old_user_phone=user_phone;
 		        		old_is_send=is_send;
 		        		old_user_email=user_email;

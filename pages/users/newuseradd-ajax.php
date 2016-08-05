@@ -10,12 +10,12 @@ $data=null;
 $errorsinfo=null;
 
 if($_POST['mode']==0){
-	$isadd=$mydb->add_user($_POST['user_name'],$_POST['passwd'],$_POST['user_role'],$_POST['user_phone'],$_POST['user_email'],$_POST['is_send']);
+	$isadd=$mydb->add_user($_POST['user_name'],$_POST['passwd'],$_POST['user_role'],$_POST['user_gid'],$_POST['user_phone'],$_POST['user_email'],$_POST['is_send']);
 	$errorsinfo=$mydb->__get('last_errors');
 }
 elseif($_POST['mode']==1){
 	if($_POST['passwd']=="")
-		$mydb->update_user_nopwd($_POST['user_id'],$_POST['user_name'],$_POST['user_role'],$_POST['user_phone'],$_POST['user_email'],$_POST['is_send']);
+		$mydb->update_user_nopwd($_POST['user_id'],$_POST['user_name'],$_POST['user_role'],$_POST['user_gid'],$_POST['user_phone'],$_POST['user_email'],$_POST['is_send']);
 	else
 		$mydb->update_user($_POST['user_id'],$_POST['user_name'],$_POST['passwd'],$_POST['user_role'],$_POST['user_phone'],$_POST['user_email'],$_POST['is_send']);
 	$errorsinfo=$mydb->__get('last_errors');

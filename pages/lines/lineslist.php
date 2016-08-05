@@ -3,7 +3,8 @@
 <?php 
 global $mydb;
 $lines=$mydb->get_all_lines();
-$gros=$mydb->get_arr_groups_on_line();
+$groups=$mydb->get_reindex_string('groups','line_id',array('group_loc','group_name'));
+$groups2=$mydb->get_reindex_string('groups','line_id2',array('group_loc','group_name'));
 if(is_current_user_can_see(3)){
 ?>
 	<div class="btn-group">
@@ -20,16 +21,18 @@ if($lines&&count($lines)>0){
 		<tbody>
 		<?php
 		foreach ($lines as $line){
-			if(!isset($gros[$line['line_id']]))
-				$allgros="";
-			else
-				$allgros=substr($gros[$line['line_id']],0,strlen('，')*(-1));
-				$html='';
-				$html.= '<tr><td><input id="cb-select-'.$line['line_id'].'" type="hidden" value="'.$line['line_id'].'"><br />&nbsp;</td><td><strong>'.$line['line_name'].'</strong>';
-				if(is_current_user_can_see(3))
-					$html.='<div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div>';
-				$html.='</td><td>'.$allgros.'</td></tr>';
-				echo $html;
+			$allgros='';
+			if(!empty($groups[$line['line_id']]))
+				$allgros=$groups[$line['line_id']];
+			if(!empty($groups2[$line['line_id']]))
+				$allgros.=$groups2[$line['line_id']];
+			
+			$html='';
+			$html.= '<tr><td><input id="cb-select-'.$line['line_id'].'" type="hidden" value="'.$line['line_id'].'"><br />&nbsp;</td><td><strong>'.$line['line_name'].'</strong>';
+			if(is_current_user_can_see(3))
+				$html.='<div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div>';
+			$html.='</td><td>'.$allgros.'</td></tr>';
+			echo $html;
 			}
 		?>
 		</tbody>
@@ -45,7 +48,17 @@ if($lines&&count($lines)>0){
 }
 else{
 ?>
-	<div class="widget">
+	<table class="table striped table-line tohide">
+		<thead><tr>
+			<th class="select"><input id="cb-select-all" type="hidden"></th><th>线路名</th><th>绑定杆塔</th>
+		</tr></thead>
+		<tbody>
+		</tbody>
+		<tfoot><tr>
+			<th><input id="cb-select-all" type="hidden"></th><th>线路名</th><th>绑定杆塔</th>
+		</tr></tfoot>
+	</table>
+	<div class="widget widget-null">
 		<h3>NOT FOUND</h3>
 		<p><h2>&nbsp;&nbsp;线路列表为空</h2></p>
 	</div>

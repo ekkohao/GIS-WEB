@@ -7,17 +7,17 @@ global $mydb;
 $data=null;
 $errorsinfo=null;
 if($_POST['mode']==0){//添加
-	$isadd=$mydb->add_line($_POST['line_name']);
+	$isadd=$mydb->add_usergroup($_POST['user_gname']);
 	$errorsinfo=$mydb->__get('last_errors');
 	if($isadd)
-		$data['line_id']=$mydb->get_line_vi_name($_POST['line_name'])['line_id'];
+		$data['user_gid']=$mydb->get_usergid($_POST['user_gname']);
 }
 elseif($_POST['mode']==1){//修改
-	$mydb->update_line($_POST['line_id'],$_POST['line_name']);
+	$mydb->update_usergroup($_POST['user_gid'],$_POST['user_gname']);
 	$errorsinfo=$mydb->__get('last_errors');
 }
 else{//修改
-	$mydb->delete_line($_POST['line_id']);
+	$mydb->delete_usergroup($_POST['user_gid']);
 	$errorsinfo=$mydb->__get('last_errors');
 }
 $jsonpre=array('data'=>$data,'errorsinfo'=>$errorsinfo);

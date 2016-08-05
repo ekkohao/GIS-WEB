@@ -75,6 +75,23 @@
 			</div>
 		</div>
 		<div class="form-group">
+			<label for="selectUserGName" class="col-sm-3 control-label">管理小组</label>
+			<div class="col-sm-6">
+				<select class="form-control" id="selectUserGName">
+					<option selected="selected" value="0">默认</option>
+					<?php
+					global $mydb;
+					$usergroups=$mydb->get_all_usergroups();
+					if(!empty($usergroups))
+						foreach ($usergroups as $usergroup) {
+							echo '<option value="'.$usergroup['user_gid'].'">'.$usergroup['user_gname'].'</option>';
+						}
+					?>
+				</select>
+				<label>不分配小组则默认由所有用户管理<span class="error"></span></label>
+			</div>
+		</div>
+		<div class="form-group">
 			<label for="selectLine" class="col-sm-3 control-label"></label>
 			<div class="col-sm-6">
 				<button type="submit" class="btn btn-success">确定添加</button>
