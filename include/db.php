@@ -11,8 +11,11 @@ class db{
 	//设置数据库重连次数
 	protected $last_errors=null;
 	//protected $reconnect_retries = 5;
+	//保存分页对象数组
+	protected $pgn;
 	//所有的结果行
 	protected $total_results;
+	//分页的html
 	protected $pgn_html=null;
 	//数据库前缀
 	var $prefix = '';
@@ -28,9 +31,6 @@ class db{
 		//若存在mysqli模块则启用
 		if ( function_exists( 'mysqli_connect' ) ) 
 			$this->is_use_mysqli = true;
-		if ( defined( 'WP_SETUP_CONFIG' ) ) {
-			return;
-		}
 		$this->db_connect();
 	}
 	//析构函数
@@ -346,11 +346,8 @@ class db{
 	}
 	//返回所有设备信息数组，组合了杆塔和线路信息
 	public function get_all_devs(){
-		$this->queries ="SELECT COUNT(*) FROM devs";
-		$this->total_results=$this->get_total_results();
-		$devpgn=new pagination($this->total_results);
-		$this->pgn_html=$devpgn->showpgn();
-		$this->queries ="SELECT * FROM devs ORDER BY group_id ".$devpgn->limit;
+		$this->set_pagination("devs");
+		$this->queries ="SELECT * FROM devs ORDER BY group_id ".$this->pgn['devs']->limit;
 		$rows=$this->get_rows();
 		$groupsarr=$this->get_all_groups_info_index_id();
 		$linesarr=$this->get_all_lines_info_index_id();
@@ -513,11 +510,8 @@ class db{
 	}
 	//返回所有杆塔信息数组
 	public function get_all_groups(){
-		$this->queries="SELECT COUNT(*) FROM groups";
-		$this->total_results=$this->get_total_results();
-		$grouppgn=new pagination($this->total_results);
-		$this->pgn_html=$grouppgn->showpgn();
-		$this->queries="SELECT * FROM groups ORDER BY group_loc,group_name ".$grouppgn->limit;
+		$this->set_pagination("groups");
+		$this->queries="SELECT * FROM groups ORDER BY group_loc,group_name ".$this->pgn['groups']->limit;
 		$rows=$this->get_rows();
 		$linesarr=$this->get_all_lines_info_index_id();
 		$devnumsarr=$this->get_all_devs_num_index_line_id_gro_id_dev_phase();
@@ -724,11 +718,8 @@ class db{
 		return false;
 	}
 	public function get_all_lines(){
-		$this->queries="SELECT COUNT(*) FROM liness";
-		$this->total_results=$this->get_total_results();
-		$linepgn=new pagination($this->total_results);
-		$this->pgn_html=$linepgn->showpgn();
-		$this->queries="SELECT * FROM liness ".$linepgn->limit;
+		$this->set_pagination("liness");
+		$this->queries="SELECT * FROM liness ".$this->pgn['liness']->limit;
 		return $this->get_rows();
 	}
 	public function get_all_lines_info_index_id(){
@@ -752,12 +743,15 @@ class db{
 	}
 	/*******************************************
 	 *USERS
-	 *user_role 1系统管理员  2超级管理员 3设备管理员 5普通用户
+	 *参数user_role[int]：1-系统管理员，2-超级管理员，3-设备管理员，5-普通用户
+	 *参数is_send[int]：0-不转发，1-转发
 	 ******************************************/
-	/*
-	 *添加用户
-	 *返回值：true，添加成功；false，添加失败
-	 */
+
+	/**
+	 *简述：添加新用户
+	 *参数表：1[string]用户名，2[string]未加密密码，3[int]身份类型，4[string]手机，5[string]邮箱，6[int]是否转发短信
+	 *返回[bool]：true-添加成功；false-添加失败
+	 **/
 	public function add_user($user_name,$passwd,$user_role=5,$user_phone=0,$user_email=null,$is_send=0){
 		$err=null;
 		$i=0;
@@ -778,10 +772,11 @@ class db{
 		$this->set_errors($i,$err);
 		return false;	
 	}	
-	/*
-	 *编辑用户
-	 *返回值：true，编辑成功；false，编辑失败
-	 */
+	/**
+	 *简述：编辑用户
+	 *参数表：1[int]用户ID，2[string]用户名，3[string]未加密新密码，4[int]身份类型，5[string]手机，6[string]邮箱，7[int]是否转发短信
+	 *返回[bool]-true，编辑成功-false，编辑失败
+	 **/
 	public function update_user($user_id,$user_name,$passwd,$user_role,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
@@ -804,6 +799,38 @@ class db{
 		return false;	
 	}
 
+	/**
+	 *简述：编辑用户但不修改密码
+	 *参数表：1[int]用户ID，2[string]新用户名，3[int]用户角色，4[string]手机，5[string]邮箱，6[int]是否转发短信
+	 *返回[bool]：true-编辑成功；false-编辑失败
+	 **/
+	public function update_user_nopwd($user_id,$user_name,$user_role,$user_phone,$user_email,$is_send){
+		$err=null;
+		$i=0;
+		$passwdd=md5($passwd);
+		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
+			$err[$i++]=("用户名已存在");
+		if($i==0){
+			$this->queries="UPDATE users SET user_name='".$user_name."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
+			$result=$this->get_result();
+			if(!$result)
+				$err[$i++]="修改用户失败，请联系管理员";
+			else{
+				global $__USER;
+				$user=$this->get_user($user_id);
+				$this->add_dolog($__USER['user_name']."修改了用户".$user['user_name']."的资料");
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;	
+	}
+
+	/**
+	 *简述：用户修改资料
+	 *参数表：1[int]用户ID，2[string]旧用户名，3[string]新用户名，4[string]未加密旧密码，5[string]未加密新密码，6[string]手机，7[string]邮箱，8[int]是否转发短信
+	 *返回[bool]：true-编辑成功；false-编辑失败
+	 **/
 	public function update_userself($user_id,$old_name,$user_name,$oldpasswd,$passwd,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
@@ -826,27 +853,22 @@ class db{
 		return false;	
 	}
 
-	public function update_user_nopwd($user_id,$user_name,$user_role,$user_phone,$user_email,$is_send){
-		$err=null;
-		$i=0;
-		$passwdd=md5($passwd);
-		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
-			$err[$i++]=("用户名已存在");
-		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',user_role=".$user_role.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
-			$result=$this->get_result();
-			if(!$result)
-				$err[$i++]="修改用户失败，请联系管理员";
-			else{
-				global $__USER;
-				$user=$this->get_user($user_id);
-				$this->add_dolog($__USER['user_name']."修改了用户".$user['user_name']."的资料");
-				return true;
-			}
-		}
-		$this->set_errors($i,$err);
-		return false;	
+	/**
+	 *简述：更新用户最后登陆时间
+	 *参数1[int]：用户ID
+	 *返回[bool]：ture-更新成功；false-更新失败
+	 **/
+	public function update_user_last_login_time($user_id){
+		$this->queries="UPDATE users SET last_login_time=current_login_time,current_login_time=NOW() WHERE user_id=".$user_id;
+		$result=$this->get_result();
+		return $result;
 	}
+
+	/**
+	 *简述：删除用户
+	 *参数1[int]：用户ID
+	 *返回[bool]：ture-删除成功；false-删除失败
+	 **/ 
 	public function delete_user($user_id){
 		$err=null;
 		$i=0;
@@ -869,7 +891,12 @@ class db{
 		$this->set_errors($i,$err);
 		return false;
 	}
-	//是否存在某用户ID
+
+	/**
+	 *简述：是否存在某用户
+	 *参数1[int]：用户ID
+	 *返回[bool]:true-存在；false-不存在
+	 **/
 	protected function has_user($user_id){
 		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_id."'";
 		$result=$this->get_result();
@@ -877,7 +904,12 @@ class db{
 			return false;
 		return true;
 	} 
-	//是否存在某用户名
+
+	/**
+	 *简述：是否存在某用户名
+	 *参数1[string]：用户名
+	 *返回[bool&int]:false-不存在，其他-用户ID
+	 **/
 	protected function has_user_name($user_name){
 		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_name."'";
 		$rows=$this->get_rows();
@@ -885,6 +917,13 @@ class db{
 			return $rows[0]['user_id'];
 		return false;
 	}
+
+	/**
+	 *简述：根据用户名和密码获取用户数据
+	 *参数1[string]：用户名
+	 *参数2[string]：密码
+	 *返回[null&array]:null-不存在或用户名密码错误，其他-用户信息数组
+	 **/
 	public function get_user_vi_name_pwd($user_name,$passwd){
 		$passwdd=md5($passwd);
 		$this->queries="SELECT * FROM users WHERE user_name='".$user_name."' AND passwd='".$passwdd."'";
@@ -893,12 +932,7 @@ class db{
 			return $rows[0];
 		return null;
 	}
-	//更新用户最后登陆时间
-	public function update_user_last_login_time($user_id){
-		$this->queries="UPDATE users SET last_login_time=NOW() WHERE user_id=".$user_id;
-		$result=$this->get_result();
-		return $result;
-	}
+
 	public function get_user($user_id){
 		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_id=".$user_id;
 		$rows=$this->get_rows();
@@ -908,11 +942,8 @@ class db{
 
 	}
 	public function get_all_users(){
-		$this->queries="SELECT COUNT(*) FROM users";
-		$this->total_results=$this->get_total_results()-1;
-		$userpgn=new pagination($this->total_results);
-		$this->pgn_html=$userpgn->showpgn();
-		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_role<>1 ORDER BY user_role ".$userpgn->limit;
+		$this->set_pagination("users");
+		$this->queries="SELECT user_id,user_name,user_role,user_phone,user_email,is_send,last_login_time,register_time FROM users WHERE user_role<>1 ORDER BY user_role ".$this->pgn['users']->limit;
 		$rows=$this->get_rows();
 		if(!$rows)
 			return null;
@@ -920,11 +951,8 @@ class db{
 	}
 
 	public function get_alarms(){
-		$this->queries="SELECT COUNT(*) FROM alarms";
-		$this->total_results=$this->get_total_results();
-		$alarmpgn=new pagination($this->total_results);
-		$this->pgn_html=$alarmpgn->showpgn();
-		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC ".$alarmpgn->limit;
+		$this->set_pagination("alarms");
+		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC ".$this->pgn['alarms']->limit;
 		$rows=$this->get_rows();
 		$devsarr=$this->get_all_devs_info_index_id();
 		$groupsarr=$this->get_all_groups_info_index_id();
@@ -982,11 +1010,8 @@ class db{
 	}
 
 	public function get_histories(){
-		$this->queries="SELECT COUNT(*) FROM histories";
-		$this->total_results=$this->get_total_results();
-		$historypgn=new pagination($this->total_results);
-		$this->pgn_html=$historypgn->showpgn();
-		$this->queries="SELECT * FROM histories ORDER BY action_time DESC ".$historypgn->limit;
+		$this->set_pagination("histories");
+		$this->queries="SELECT * FROM histories ORDER BY action_time DESC ".$this->pgn['histories']->limit;
 		$rows=$this->get_rows();
 		$devsarr=$this->get_all_devs_info_index_id();
 		$groupsarr=$this->get_all_groups_info_index_id();
@@ -1057,31 +1082,37 @@ class db{
 	}
 
 	/*简述：添加用户操作日志
-	 *参数1：[string]需要显示的操作信息
+	 *参数1[string]：需要显示的操作信息
 	 *返回：无
 	 */
 	protected function add_dolog($msg){
-		$this->queries="INSERT INTO dologs(do_msg) VALUES('".$msg."')";
+		$ip=get_ip();
+		$this->queries="INSERT INTO dologs(do_msg,do_ip) VALUES('".$msg."','".$ip."')";
 		$result=$this->get_result();
 	}
 
 	/*简述：获取用户操作日志
 	 *参数1：无
-	 *返回：[array]所有操作数组
+	 *返回[array]：所有操作数组
 	 */
 	public function get_dologs(){
-		$this->queries="SELECT * FROM dologs ORDER BY do_time DESC";
+		$this->set_pagination("dologs");
+		$this->queries="SELECT * FROM dologs ORDER BY do_time DESC ".$this->pgn['dologs']->limit;
 		$rows=$this->get_rows();
 		return $rows;
 	}
-	/*简述：
-	 *
+	/*简述：设置某个数据表的分页码
+	 *参数1[string]：需要设置的数据表名
+	 *返回：无
 	 */
-	public function get_total_results(){
+	public function set_pagination($table){
+		$this->queries="SELECT COUNT(*) FROM ".$table;
 		$rows=$this->get_rows();
-		if(empty($rows))
-			return 0;
-		return $rows[0][0];
+		$this->total_results=empty($rows)?0:$rows[0][0];
+		if($table=="users")
+			$this->total_results--;
+		$this->pgn[$table]=new pagination($this->total_results);
+		$this->pgn_html=$this->pgn[$table]->showpgn();
 	}
 }
 ?>

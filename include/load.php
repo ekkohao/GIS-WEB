@@ -123,4 +123,14 @@ function get_head(){
 	$html.='</head>';
 	echo $html;
 }
+function get_ip(){
+	$ip="未知";
+	if ( !empty($_SERVER['HTTP_X_FORWARDED_FOR']))   
+		$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];  
+	elseif ( !empty($_SERVER['REMOTE_ADDR']))
+		$ip = $_SERVER['REMOTE_ADDR']; 
+	elseif(!empty($_SERVER["HTTP_CLIENT_IP"]))
+  		$ip = $_SERVER["HTTP_CLIENT_IP"];
+	return $ip;
+}
 ?>

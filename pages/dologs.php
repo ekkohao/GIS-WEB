@@ -16,23 +16,26 @@
 				?>
 				<table class="table striped table-alarmslist">
 					<thead><tr>
-						<th>时间</th><th>动作</th>
+						<th>时间</th><th>动作</th><th>IP</th>
 					</tr></thead>
 					<tbody>
 						<?php
 
 						foreach ($dologs as $dolog) {
 							$html='';
-							$html.='<tr><td>'.$dolog['do_time'].'</td><td>'.$dolog['do_msg'].'</td></tr>';
+							$html.='<tr><td>'.$dolog['do_time'].'</td><td>'.$dolog['do_msg'].'</td><td>'.$dolog['do_ip'].'</td></tr>';
 							echo $html;
 						}
 						?>
 					</tbody>
 					<tfoot><tr>
-						<th>时间</th><th>动作</th>
+						<th>时间</th><th>动作</th><th>IP</th>
 					</tr></tfoot>
 				</table>
 				<?php 
+				$pgn_html=$mydb->__get("pgn_html");
+				if(!empty($pgn_html))
+					echo $pgn_html; 
 			}
 			else{
 				?>
