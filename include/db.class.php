@@ -25,15 +25,15 @@ class db{
 	protected $has_connected=false;
 	protected $ready=false;
 	private $is_use_mysqli=false;
-	//构造函数
+	/** 构造函数 **/
 	public function __construct() {
 		register_shutdown_function( array( $this, '__destruct' ) );
-		//若存在mysqli模块则启用
+		/*若存在mysqli模块则启用*/
 		if ( function_exists( 'mysqli_connect' ) ) 
 			$this->is_use_mysqli = true;
 		$this->db_connect();
 	}
-	//析构函数
+	/** 析构函数 **/
 	public function __destruct() {
 		$this->db_close();
 		return true;
@@ -56,18 +56,20 @@ class db{
 	public function __unset( $name ) {
 		unset( $this->$name );
 	}
-	//连接数据库
+
+	/**
+	 * db_connect
+	 * 连接数据库
+	 * @param void
+	 * @return void
+	 **/	
 	public function db_connect() {
-		/*
-		 * Deprecated in 3.9+ when using MySQLi. No equivalent
-		 * $new_link parameter exists for mysqli_* functions.
-		 */
+
 		$new_link = defined( 'MYSQL_NEW_LINK' ) ? MYSQL_NEW_LINK : true;
 		$client_flags = defined( 'MYSQL_CLIENT_FLAGS' ) ? MYSQL_CLIENT_FLAGS : 0;
 		if ( $this->is_use_mysqli ) {
 			$this->dbcon = mysqli_init();
-			// mysqli_real_connect doesn't support the host param including a port or socket
-			// like mysql_connect does. This duplicates how mysql_connect detects a port and/or socket file.
+			// mysqli不支持数据库主机参数带有端口号
 			$port = null;
 			$socket = null;
 			$host = DB_HOST;
@@ -129,7 +131,15 @@ class db{
 		}
 		return false;
 	}
+
+	/**
+	 * db_close
+	 * 关闭数据库连接
+	 * @param void
+	 * @return void
+	 **/	
 	public function db_close(){
+		$this->flush();
 		if($this->has_connected){
 			if($this->is_use_mysqli)
 				mysqli_close($this->dbcon);
@@ -138,7 +148,39 @@ class db{
 			$this->has_connected=false;
 		}
 	}
-	//设置数据库编码
+
+	/**
+	 * flush
+	 * 重置连接和结果变量
+	 * @param void
+	 * @return void
+	 **/		
+	public function flush() {
+		$this->col_info = null;
+
+		if ( $this->is_use_mysqli && $this->result instanceof mysqli_result ) {
+			mysqli_free_result( $this->result );
+			$this->result = null;
+
+			// 检查句柄
+			if ( empty( $this->dbcon ) || !( $this->dbcon instanceof mysqli ) ) {
+				return;
+			}
+			while ( mysqli_more_results( $this->dbcon ) ) {
+				mysqli_next_result( $this->dbcon );
+			}
+		} elseif ( is_resource( $this->result ) ) {
+			mysql_free_result( $this->result );
+		}
+	}
+
+	/**
+	 * set_charset
+	 * 设置数据库编码
+	 * @param 1 string $dbh 数据库连接的句柄
+	 * @param 2 string $charset 编码,默认为配置文件的编码设置
+	 * @return void
+	 **/
 	public function set_charset( $dbh, $charset = null) {
 		if ( ! isset( $charset ) )
 			$charset = DB_CHARSET;
@@ -147,7 +189,14 @@ class db{
  		else 
 			mysql_set_charset( $charset, $dbh );	
 	}
-	/** 选择数据库 **/
+
+	/**
+	 * select
+	 * 选择数据库
+	 * @param 1 string $db 数据库名
+	 * @param 2 string $dbh 数据库连接的句柄,null为默认句柄
+	 * @return void 选择失败跳转错误页面
+	 **/
 	public function select( $db, $dbh = null ) {
 		if ( is_null($dbh) )
 			$dbh = $this->dbh;
@@ -164,38 +213,67 @@ class db{
 		}
 	}
 
-	protected function get_rows(){
+	/**
+	 * get_rows
+	 * 获取结果集的所有行数
+	 * @param null/string $index 可选,null-下标由0开始自增;[string]-下标为列$index对应的列值
+	 * @return null/array null-结果集为空;array-结果集的二维数组
+	 **/
+	protected function get_rows($index=null){
 		if(!$this->queries)
 			return null;
 		$rows=null;
+		$this->get_result();
 		if($this->is_use_mysqli){
-			$result=mysqli_query($this->dbcon,$this->queries);
-			if(!$result)
+			if(!$this->result)
 				return null;
-			$i=0;
-			while($row=mysqli_fetch_array($result))
-				$rows[$i++]=$row;
+			if($index==null){
+				$i=0;
+				while($row=mysqli_fetch_array($this->result))
+					$rows[$i++]=$row;
+			}
+			else{
+				if($this->has_col($index))
+					while($row=mysqli_fetch_array($this->result))
+						$rows[$row[$index]]=$row;
+			}
 		}
 		else{
-			$result=mysql_query($this->queries,$this->dbcon);
-			if(!$result)
+			if(!$this->result)
 				return null;
-			$i=0;
-			while($row=mysql_fetch_array($result))
-				$rows[$i++]=$row;
+			if($index==null){
+				$i=0;
+				while($row=mysql_fetch_array($result))
+					$rows[$i++]=$row;
+			}
+			else{
+				if($this->has_col($index))
+					while($row=mysql_fetch_array($result))
+						$rows[$row[$index]]=$row;
+			}
 		}
 		return $rows;
 	}
-	protected function get_result(){
-		if($this->is_use_mysqli)
-			$result=mysqli_query($this->dbcon,$this->queries);
-		else
-			$result=mysql_query($this->queries,$this->dbcon);
-		return $result;
-	}
 	/**
-	 *获取当前查询结果集中所有列（字段）的对象数组，
-	 *每个对象包含了字段名name、所属表名table、字段最大长度max_length......等等
+	 * get_result
+	 * 获取结果集
+	 * @param void
+	 * @return bool/obj UPDATE,DELETE,INSERT返回语句执行结果的布尔值;SELECT等查询语句若查询失败返回false,成功返回结果对象
+	 **/
+	protected function get_result(){
+		$this->flush();
+		if($this->is_use_mysqli)
+			$this->result=mysqli_query($this->dbcon,$this->queries);
+		else
+			$this->result=mysql_query($this->queries,$this->dbcon);
+		return $this->result;
+	}
+
+	/**
+	 * load_col_info
+	 * 载入结果集的字段信息(name,table,maxlength...),存入到$col_info
+	 * @param void
+	 * @return void
 	 **/
 	protected function load_col_info() {
 		if ( $this->col_info )
@@ -210,7 +288,15 @@ class db{
 			}
 		}
 	}
-	/** 返回结果集中的某个结果列（字段）的某个属性值或所有列（当$col_offset==-1时）的某个属性值数组**/
+
+	/**
+	 * get_col_info
+	 * 获取结果集的一个或多个字段信息
+	 * @param 1 string $info_type 需要获取的信息类型,默认为name
+	 * @param 2 int $col_offset 需要获取的字段下标,默认为所有字段
+	 * @return string/array string-当指定$col_offset的值时,返回指定字段的信息;array-一维数组,当
+	 *         $col_offset值为-1时,返回所有字段信息的一维数组
+	 **/
 	public function get_col_info( $info_type = 'name', $col_offset = -1 ) {
 		$this->load_col_info();
 		if ( $this->col_info ) {
@@ -227,30 +313,133 @@ class db{
 			}
 		}
 	}
+
+	/**
+	 * has_col
+	 * 是否存在某个字段名
+	 * @param string $col_name 需要检索的字段名
+	 * @return bool false-不存在;true-存在
+	 **/
+	protected function has_col($col_name){
+		$this->load_col_info();
+		if ( $this->is_use_mysqli ) {
+			for ( $i = 0; $i < @mysqli_num_fields( $this->result ); $i++ ) {
+				if($this->col_info[ $i ]->{'name'} ==$col_name)
+					return true;
+			}
+		} else {
+			for ( $i = 0; $i < @mysql_num_fields( $this->result ); $i++ ) {
+				if($this->col_info[ $i ]->{'name'} ==$col_name)
+					return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * set_errors
+	 * 设置$this->last_errors二维数组,保存错误信息
+	 * @param int $err_count 错误信息个数
+	 * @param array $err_arr 错误信息的一维数组
+	 * @return void
+	 **/
 	protected function set_errors($err_count,$err_arr){
 		$this->last_errors['count']=$err_count;
 		$this->last_errors['errors']=$err_arr;
 	}
-	//重写表结果数组下标
-	public function get_reindex_table($table,$index,$cols='*'){
-		if(!is_array($cols))
-			$this->queries='SELECT '.$cols.','.$index.' FROM '.$table;
-		else{
-			$colss=implode(',',$cols);
-			$this->queries='SELECT '.$colss.','.$index.' FROM '.$table;
-		}
-		$rows=$this->get_rows();
-		if($rows==null)
-			return null;
-		$rerows=null;
-		$rerows[0]=null;
-		foreach ($rows as $row) {
-				$rerows[$row[$index]]=$row;
-		}
-		return $rerows;
+
+	/**
+	 * _real_cols_by_ref
+	 * 展开字段参数,若为字段串则不变,若为数组则转为字符串
+	 * @param string/array &$cols 引用字段参数
+	 * @return void
+	 **/
+	private function _real_cols_by_ref(&$cols){
+		if(is_array($cols))
+			$cols=implode(',',$cols);
 	}
 
-	//重写下标并将重复下标链接为字符串
+	/**
+	 * _real_where_by_ref
+	 * 展开where参数,若为字段串则不变,若为数组则转为字符串
+	 * @param string/array &$where 引用where参数
+	 * @return void
+	 **/
+	private function _real_where_by_ref(&$where){
+		if (empty($where)) {
+			$where='';
+			return;
+		}
+		$str='';
+		$i=0;
+		if(is_array($where)){
+			foreach($where as $k=>$v){
+				if($i%2==0)
+					$str.=($k.'='.$v);
+				else{
+					$v=($v=='OR'||$v=='or')?' OR ':' AND ';
+					$str.=$v;
+				}
+				$i++;
+			}
+		}
+		$where=$str;
+		unset($str);
+	}
+
+	/**
+	 * _real_orderby_by_ref
+	 * 展开排序字段参数,若为字段串则不变,若为数组则转为字符串
+	 * @param string/array &$orderby 引用排序字段参数
+	 * @return void
+	 **/
+	private function _real_orderby_by_ref(&$orderby){
+		if (empty($orderby)) {
+			$orderby='';
+			return;
+		}
+		if(is_array($orderby))
+			$orderby=implode(',',$orderby);
+	}
+
+	/**
+	 * get_table
+	 * 获取一个查询结果集所有行的二维数组,下标重写为$index的列值
+	 * @param string $table 数据表名
+	 * @param string $index 结果数组的下标,$table的某一列
+	 * @param string/array $cols 需要查询的字段,默认为所有字段
+	 * @param array $where 条件查询
+	 * @param array $orderby 排序基准字段
+	 * @param bool $is_set_pgn 是否设置分页,默认为否
+	 * @return  null/array null-$table表中无数据;array-下标为$index列值,数组值为$cols的列值的字符串数组
+	 **/
+	public function get_table($table,$index,$cols='*',$where=array(),$orderby=array(),$is_set_pgn=false){
+
+		$this->_real_cols_by_ref($cols);
+		$this->_real_where_by_ref($where);
+		$this->_real_orderby_by_ref($orderby);
+		$colss=($cols=='*')?'*':$cols.$index;
+		$this->queries='SELECT '.$colss.' FROM '.$table;
+		if(!empty($where))
+			$this->queries.=' WHERE '.$where;
+		if(!empty($orderby))
+			$this->queries.=' ORDER BY '.$orderby;
+		if($is_set_pgn)
+			$this->queries.=' '.$this->pgn[$table]->limit;
+		echo $this->queries;
+		$rows=$this->get_rows($index);
+		return $rows;
+	}
+
+	/**
+	 * get_reindex_string
+	 * 获取一个一维字符串数组,下标重写为$index的列值,相应数组的值为$cols的列值(多个列之间用'-'连接);相同下标
+	 * 以','连接为字符串
+	 * @param 1 string $table 数据表名
+	 * @param 2 string $index 重写的下标,$table的某一列
+	 * @param 3 string/array $cols 数组下标对应的值,$table的某一列或多列
+	 * @return  null/array null-$table表中无数据;array-下标为$index列值,数组值为$cols的列值的字符串数组
+	 **/
 	public function get_reindex_string($table,$index,$cols){
 		if(!is_array($cols))
 			$this->queries='SELECT '.$cols.','.$index.' FROM '.$table;
@@ -609,7 +798,7 @@ class db{
 		$this->set_pagination("groups");
 		$this->queries="SELECT * FROM groups ORDER BY group_loc,group_name ".$this->pgn['groups']->limit;
 		$rows=$this->get_rows();
-		$linesarr=$this->get_all_lines_info_index_id();
+		$linesarr=$this->get_all_lines();
 		$devnumsarr=$this->get_all_devs_num_index_line_id_gro_id_dev_phase();
 		$usergrouparr=$this->get_all_usergroups_index_usergid();
 		$linesarr[0]['line_name']='未绑定';
@@ -683,19 +872,6 @@ class db{
 			return $row['line_name'];
 		return "已删除";
 	}
-	// //获取一个数组，数组下标为线路id，相应值为绑定杆塔的字符串
-	// public function get_arr_groups_on_line(){
-	// 	$this->queries="SELECT groups.group_name,groups.group_loc,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
-	// 	$results=$this->get_rows();
-	// 	if(!$results)
-	// 		return null;
-	// 	foreach ($results as $result) {
-	// 		if(!isset($rows[$result['line_id']]))
-	// 			$rows[$result['line_id']]="";
-	// 		$rows[$result['line_id']].=$result['group_loc'].'—'.$result['group_name'].'，';
-	// 	}
-	// 	return $rows;
-	// }
 		//获取一个数组，数组下标为线路id，相应值为绑定杆塔的字符串
 	public function get_all_groups_index_line(){
 		$this->queries="SELECT groups.group_name,groups.group_loc,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.group_loc";
@@ -830,9 +1006,7 @@ class db{
 		return false;
 	}
 	public function get_all_lines(){
-		$this->set_pagination("liness");
-		$this->queries="SELECT * FROM liness ".$this->pgn['liness']->limit;
-		return $this->get_rows();
+		return $this->get_table('liness','line_id','*',array(),'line_name',true);
 	}
 	public function get_all_lines_info_index_id(){
 		$this->queries="SELECT * FROM liness";

@@ -6,6 +6,7 @@
 <?php 
 global $mydb;
 $users=$mydb->get_all_users();
+
 $realrole=['','系统管理员','超级管理员','设备管理员','','普通用户'];
 if($users&&count($users)>0){
 ?>
