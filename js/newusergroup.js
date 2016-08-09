@@ -63,7 +63,7 @@ $(document).ready(function(){
 		        //error: errorFunction,  //错误执行方法    
 		        success: function (t) {
 		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
-		        		$('.msgbox .success-msg').html("删除成功");
+		        		$('.msgbox .success-msg').html("删除成功").show();
 		        		changeTr.remove();
 		        		return;
 		        	}
@@ -72,11 +72,12 @@ $(document).ready(function(){
 		        		for(var i=0;i<t.errorsinfo.count;i++){
 		        			$('.msgbox .error-msg').append(t.errorsinfo.errors[i]+'<br />');
 		        		}
+		        		$('.msgbox .error-msg').show();
 		        		$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
 		        	}
 		        },
 		        error: function () {
-		        	$('.msgbox .error-msg').html('网络错误，请稍后再试');
+		        	$('.msgbox .error-msg').html('网络错误，请稍后再试').show();
 		        	$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
 		        }
 		 });
@@ -128,8 +129,8 @@ $(document).ready(function(){
 		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
 		        		$('.form-addug .success-msg').html("小组["+user_gname+"]"+modeName[mode]+"成功").show();
 		        		if(mode==0){
-		        			if($('.table-line').hasClass('tohide')){
-		        				$('.table-line').removeClass('tohide');
+		        			if($('.table-usergroup').hasClass('tohide')){
+		        				$('.table-usergroup').removeClass('tohide');
 		        				$('.widget-null').addClass('tohide');
 		        			}
 		        			$('.table-usergroup tbody').append('<tr><td><input id="cb-select-'+t.data['user_gid']+'" type="hidden" value="'+t.data['user_gid']+'"><br />&nbsp;</td><td><strong>'+user_gname+'</strong><div class="row-actions"><span class="edit"><a href="javascript:void(0)" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td><td></td></tr>');

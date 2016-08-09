@@ -10,7 +10,7 @@ if($_POST['mode']==0){//添加
 	$isadd=$mydb->add_usergroup($_POST['user_gname']);
 	$errorsinfo=$mydb->__get('last_errors');
 	if($isadd)
-		$data['user_gid']=$mydb->get_usergid($_POST['user_gname']);
+		$data['user_gid']=$mydb->get_user_gid($_POST['user_gname']);
 }
 elseif($_POST['mode']==1){//修改
 	$mydb->update_usergroup($_POST['user_gid'],$_POST['user_gname']);

@@ -63,7 +63,7 @@ $(document).ready(function(){
 		        //error: errorFunction,  //错误执行方法    
 		        success: function (t) {
 		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
-		        		$('.msgbox .success-msg').html("删除成功");
+		        		$('.msgbox .success-msg').html("删除成功").show();
 		        		changeTr.remove();
 		        		return;
 		        	}
@@ -72,11 +72,12 @@ $(document).ready(function(){
 		        		for(var i=0;i<t.errorsinfo.count;i++){
 		        			$('.msgbox .error-msg').append(t.errorsinfo.errors[i]+'<br />');
 		        		}
+		        		$('.msgbox .error-msg').show();
 		        		$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
 		        	}
 		        },
 		        error: function () {
-		        	$('.msgbox .error-msg').html('网络错误，请稍后再试');
+		        	$('.msgbox .error-msg').html('网络错误，请稍后再试').show();
 		        	$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
 		        }
 		 });

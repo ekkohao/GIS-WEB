@@ -469,7 +469,7 @@ table.table-userlist>tbody .notsend{
         text-align: center;
         margin-bottom:25px; 
     }
-    .pop-box.pop-addline,.pop-box.pop-addug form{
+    .pop-box.pop-addline form,.pop-box.pop-addug form{
 
         height:260px;
     }
