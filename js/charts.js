@@ -17,7 +17,7 @@
             if (json.dev == null)
                 $("dl.devinfo").html("&nbsp;&nbsp;&nbsp;&nbsp;没有此设备，请重新选择设备");
             else
-                $("dl.devinfo").html("<dt>设备编号</dt><dd>" + json.dev.dev_number + "</dd><dt>相位</dt><dd>" + json.dev.dev_phase+"</dd><dt>所属杆塔</dt><dd>" + json.dev.group_loc_name + "</dd><dt>所在线路</dt><dd>" + json.dev.line_name + "</dd>");
+                $("dl.devinfo").html("<dt>设备编号</dt><dd>" + json.dev.dev_number + "</dd><dt>相位</dt><dd>" + json.dev.dev_phase+"</dd><dt>所属杆塔</dt><dd>" + json.dev.group_loc+"-"+json.dev.group_name + "</dd><dt>所在线路</dt><dd>" + json.dev.line_name + "</dd>");
             if (json.data == null) {
                 alert("该时段没有数据！");
                 return;

@@ -34,8 +34,8 @@ function push($data,$name='dev'){
 		$objPHPExcel->getActiveSheet()->setCellValue('C1', '相位');
 		$objPHPExcel->getActiveSheet()->setCellValue('D1', '杆塔名');
 		$objPHPExcel->getActiveSheet()->setCellValue('E1', '杆塔位置');
-		$objPHPExcel->getActiveSheet()->setCellValue('F1', '纬度');
-		$objPHPExcel->getActiveSheet()->setCellValue('G1', '经度');
+		$objPHPExcel->getActiveSheet()->setCellValue('F1', '经度');
+		$objPHPExcel->getActiveSheet()->setCellValue('G1', '纬度');
 		$objPHPExcel->getActiveSheet()->setCellValue('H1', '线路名');
 		/*以下就是对处理Excel里的数据， 横着取数据，主要是这一步，其他基本都不要改*/
 		$num=1;

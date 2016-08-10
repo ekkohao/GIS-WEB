@@ -1,5 +1,5 @@
 <?php
-require_once ABSPATH."/include/pagination.class.php";
+require_once ABSPATH.'/include/pagination.class.php';
 //数据库接口封装
 class db{
 	//保存查询结果或查询是否成功的布尔值
@@ -8,8 +8,9 @@ class db{
 	protected $col_info;
 	//保存执行的查询语句
 	protected $queries;
-	//设置数据库重连次数
+	
 	protected $last_errors=null;
+	//设置数据库重连次数
 	//protected $reconnect_retries = 5;
 	//保存分页对象数组
 	protected $pgn;
@@ -352,6 +353,22 @@ class db{
 	}
 
 	/**
+	 * set_pagination
+	 * 分页设置
+	 * @param string 分页的数据表名
+	 * @return void
+	 **/
+	public function set_pagination($table){
+		$this->queries="SELECT COUNT(*) FROM ".$table;
+		$rows=$this->get_rows();
+		$this->total_results=empty($rows)?0:$rows[0][0];
+		if($table=="users")
+			$this->total_results--;
+		$this->pgn[$table]=new pagination($this->total_results);
+		$this->pgn_html=$this->pgn[$table]->showpgn();
+	}
+
+	/**
 	 * _real_cols_by_ref
 	 * 展开字段参数,若为字段串则不变,若为数组则转为字符串
 	 * @param string/array &$cols 引用字段参数
@@ -383,8 +400,8 @@ class db{
 				}
 				$i++;
 			}
+			$where=substr($str,1);
 		}
-		$where=substr($str,1);
 		unset($str);
 	}
 
@@ -419,7 +436,7 @@ class db{
 		$this->_real_cols_by_ref($cols);
 		$this->_real_where_by_ref($where);
 		$this->_real_orderby_by_ref($orderby);
-		$colss=($cols=='*')?'*':$cols.','.$index;
+		$colss=($cols=='*')?'*':($index==null)?$cols:$cols.','.$index;
 		if($is_set_pgn)
 			$this->set_pagination($table);
 		$this->queries='SELECT '.$colss.' FROM '.$table;
@@ -614,17 +631,23 @@ class db{
 		$devs=$this->get_table('devs',null,'*',array('dev_id'=>$dev_id));
 		if(!$devs||count($devs)<1)
 			return null;
-		$groups=$this->get_table('groups',null,'*',array('group_id'=>$dev['group_id']));
-		$lines=$this->get_table('liness',null,'*',array('line_id'=>$dev['line_id']));
-		$groups[0]['group_loc']=$linesarr[0]['line_name']='未绑定';
-		$groups[0]['group_name']='&nbsp;';
-
-		$devs[$k]['group_loc']=isset($groups[$dev['group_id']]['group_loc'])?$groups[$dev['group_id']]['group_loc']:'杆塔已删除';
-		$devs[$k]['group_name']=isset($groups[$dev['group_id']]['group_name'])?$groups[$dev['group_id']]['group_name']:'&nbsp;';
-		$devs[$k]['line_name']=isset($lines[$dev['line_id']]['line_name'])?$lines[$dev['line_id']]['line_name']:'线路已删除';
+		
+		if($devs[0]['group_id']==0){
+			$groups[0]['group_loc']='未绑定';
+			$groups[0]['group_name']='&nbsp;';
+		}
+		else
+			$groups=$this->get_table('groups',null,'*',array('group_id'=>$devs[0]['group_id']));
+		if($devs[0]['line_id']==0)
+			$lines[0]['line_name']='未绑定';
+		else
+			$lines=$this->get_table('liness',null,'*',array('line_id'=>$devs[0]['line_id']));
+		$devs[0]['group_loc']=isset($groups[0]['group_loc'])?$groups[0]['group_loc']:'杆塔已删除';
+		$devs[0]['group_name']=isset($groups[0]['group_name'])?$groups[0]['group_name']:'&nbsp;';
+		$devs[0]['line_name']=isset($lines[0]['line_name'])?$lines[0]['line_name']:'线路已删除';
 		unset($groups);
 		unset($lines);
-		return $rows[0];
+		return $devs[0];
 
 	}
 
@@ -777,7 +800,7 @@ class db{
 	 * @return int 0-无此杆塔;其他-杆塔id
 	 **/
 	public function get_group_id($group_name,$group_loc){
-		$groups=$this->get_table('groups',null,'*',array('group_name'=>"'$group_name'",'group_loc'=>"'$group_loc'"));
+		$groups=$this->get_table('groups',null,'*',array('group_name'=>"'$group_name'",'AND','group_loc'=>"'$group_loc'"));
 		if($groups&&count($groups)>0)
 			return $groups[0]['group_id'];
 		return 0;
@@ -994,7 +1017,7 @@ class db{
 	public function get_line_id($line_name){
 		$lines=$this->get_table('liness',null,'*',array('line_name'=>"'$line_name'"));
 		if($lines&&count($lines)>0)
-			return $lines[0];
+			return $lines[0]['line_id'];
 		return 0;
 	}
 	/**
@@ -1223,26 +1246,102 @@ class db{
 
 	/*******************************************
 	 *USERS
-	 *参数user_role[int]：1-系统管理员，2-超级管理员，3-设备管理员，5-普通用户
-	 *参数is_send[int]：0-不转发，1-转发
+	 *参数 int $user_role：1-系统管理员，2-超级管理员，3-设备管理员，5-普通用户
+	 *参数 int $is_send：0-不转发，1-转发
 	 ******************************************/
 
 	/**
-	 *简述：添加新用户
-	 *参数表：1[string]用户名，2[string]未加密密码，3[int]身份类型，4[string]手机，5[string]邮箱，6[int]是否转发短信
-	 *返回[bool]：true-添加成功；false-添加失败
+	 * get_user_id
+	 * 伪重载函数,获取用户id
+	 *		重载1:get_user_id($user_name)
+	 *		重载2:get_user_id($user_name,$passwd)
+	 * @param string/string_string 用户名/用户名_密码
+	 * @return int -1-参数错误;0-无此用户;其他-用户id
+	 **/
+	public function get_user_id(){
+		$argsnum=func_num_args();
+		$args=func_get_args();
+		if($argsnum<1||$argsnum>2)
+			return -1;
+		if($argsnum==1)
+			$users=$this->get_table('users',null,'user_id',array('user_name'=>"'$args[0]'"));
+		else{
+			$passwdd=md5($args[1]);
+			$users=$this->get_table('users',null,'user_id',array('user_name'=>"'$args[0]'",'AND','passwd'=>"'$passwdd'"));
+		}
+		
+		if($users&&count($users)>0)
+			return $users[0]['user_id'];
+		return 0;
+	}
+
+	/**
+	 * get_user
+	 * 获取用户
+	 *@param int $user_id 用户ID
+	 *@return null/array null-无此用户;array-用户信息一维数组
+	 **/	
+	public function get_user($user_id){
+		$users=$this->get_table('users',null,'*',array('user_id'=>$user_id));
+	
+		if($users&&count($users)>0)
+			return $users[0];
+		return null;
+
+	}
+
+	/**
+	 * has_user
+	 * 是否存在某用户
+	 *@param int $user_id 用户ID
+	 *@return bool true-存在;false-不存在
+	 **/
+	protected function has_user($user_id){
+		if($this->get_user($user_id)==null)
+			return false;
+		return true;
+	} 
+
+	/**
+	 * get_all_users
+	 * 获取用户列表
+	 * @param void
+	 * @return null/array null-无用户;array-用户信息列表的二维数组
+	 **/
+	public function get_all_users(){
+		$rows=$this->get_table('users','user_id','*','user_role<>1',array('user_gid','user_role'),true);
+		if(!$rows||count($rows)<1)
+			return null;
+		$usergroups=$this->get_table('usergroups','user_gid','*');
+		$usergroups[0]['user_gname']='默认';
+		foreach ($rows as $key => $row) {
+			$rows[$key]['user_gname']=$usergroups[$row['user_gid']]['user_gname'];
+		}
+		return $rows;
+	}
+
+	/**
+	 * add_user
+	 * 添加新用户
+	 * @param string $user_name 用户名
+	 * @param string $passwd 未加密密码
+	 * @param int $user_role 身份类型
+	 * @param int $user_gid 用户小组id
+	 * @param string $user_phone 手机
+	 * @param string $user_email 邮箱
+	 * @param int $is_send 是否转发短信
+	 * @return bool true-添加成功;false-添加失败
 	 **/
 	public function add_user($user_name,$passwd,$user_role=5,$user_gid=0,$user_phone=0,$user_email=null,$is_send=0){
 		$err=null;
 		$i=0;
 		$passwdd=md5($passwd);
-		if ($this->has_user_name($user_name))
+		if ($this->get_user_id($user_name)>0)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="INSERT INTO users(user_name,passwd,user_role,user_gid,user_phone,user_email,is_send,last_login_time,register_time) VALUES('".$user_name."','".$passwdd."',".$user_role.",".$user_gid.",'".$user_phone."','".$user_email."',".$is_send.",NOW(),NOW())";
-			$result=$this->get_result();
-			if(!$result)
-				$err[$i++]=("添加用户失败，请联系管理员");
+			$colvs=array('user_name'=>"'$user_name'",'passwd'=>"'$passwdd'",'user_role'=>$user_role,'user_gid'=>$user_gid,'user_phone'=>"'$user_phone'",'user_email'=>"'$user_email'",'is_send'=>$is_send,'last_login_time'=>'NOW()','register_time'=>'NOW()');
+			if(!$this->insert_table('users',$colvs))
+				$err[$i++]='添加用户失败，请联系管理员';
 			else{
 				global $__USER;
 				$this->add_dolog($__USER['user_name']."添加了用户".$user_name);
@@ -1253,20 +1352,27 @@ class db{
 		return false;	
 	}	
 	/**
-	 *简述：编辑用户
-	 *参数表：1[int]用户ID，2[string]用户名，3[string]未加密新密码，4[int]身份类型，5[string]手机，6[string]邮箱，7[int]是否转发短信
-	 *返回[bool]-true，编辑成功-false，编辑失败
+	 * update_user
+	 * 编辑用户
+	 * @param int $user_id 用户ID
+	 * @param string $user_name 用户名
+	 * @param string $passwd 未加密密码
+	 * @param int $user_role 身份类型
+	 * @param int $user_gid 用户小组id
+	 * @param string $user_phone 手机
+	 * @param string $user_email 邮箱
+	 * @param int $is_send 是否转发短信
+	 * @return bool true-编辑成功;false-编辑失败
 	 **/
 	public function update_user($user_id,$user_name,$passwd,$user_role,$user_gid,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
 		$passwdd=md5($passwd);
-		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
+		if (($o_user_id=$this->get_user_id($user_name))&&$o_user_id!=$user_id)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_role=".$user_role.",user_gid=".$user_gid.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
-			$result=$this->get_result();
-			if(!$result)
+			$colvs=array('user_name'=>"'$user_name'",'passwd'=>"'$passwdd'",'user_role'=>$user_role,'user_gid'=>$user_gid,'user_phone'=>"'$user_phone'",'user_email'=>"'$user_email'",'is_send'=>$is_send);
+			if(!$this->update_table('users',$colvs,array('user_id'=>$user_id)))
 				$err[$i++]="修改用户失败，请联系管理员";
 			else{
 				global $__USER;
@@ -1280,19 +1386,25 @@ class db{
 	}
 
 	/**
-	 *简述：编辑用户但不修改密码
-	 *参数表：1[int]用户ID，2[string]新用户名，3[int]用户角色，4[string]手机，5[string]邮箱，6[int]是否转发短信
-	 *返回[bool]：true-编辑成功；false-编辑失败
+	 * update_user_nopwd
+	 * 编辑用户但不修改密码
+	 * @param int $user_id 用户ID
+	 * @param string $user_name 用户名
+	 * @param int $user_role 身份类型
+	 * @param int $user_gid 用户小组id
+	 * @param string $user_phone 手机
+	 * @param string $user_email 邮箱
+	 * @param int $is_send 是否转发短信
+	 * @return bool true-编辑成功;false-编辑失败
 	 **/
 	public function update_user_nopwd($user_id,$user_name,$user_role,$user_gid,$user_phone,$user_email,$is_send){
 		$err=null;
 		$i=0;
-		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
+		if (($o_user_id=$this->get_user_id($user_name))&&$o_user_id!=$user_id)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',user_role=".$user_role.",user_gid=".$user_gid.",user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
-			$result=$this->get_result();
-			if(!$result)
+			$colvs=array('user_name'=>"'$user_name'",'user_role'=>$user_role,'user_gid'=>$user_gid,'user_phone'=>"'$user_phone'",'user_email'=>"'$user_email'",'is_send'=>$is_send);
+			if(!$this->update_table('users',$colvs,array('user_id'=>$user_id)))
 				$err[$i++]="修改用户失败，请联系管理员";
 			else{
 				global $__USER;
@@ -1306,9 +1418,17 @@ class db{
 	}
 
 	/**
-	 *简述：用户修改资料
-	 *参数表：1[int]用户ID，2[string]旧用户名，3[string]新用户名，4[string]未加密旧密码，5[string]未加密新密码，6[string]手机，7[string]邮箱，8[int]是否转发短信
-	 *返回[bool]：true-编辑成功；false-编辑失败
+	 * update_userself
+	 * 用户修改资料
+	 * @param int $user_id 用户ID
+	 * @param string $old_name 旧用户名
+	 * @param string $user_name 新用户名
+	 * @param string $oldpasswd 旧未加密密码
+	 * @param string $passwd 新未加密密码
+	 * @param string $user_phone 手机
+	 * @param string $user_email 邮箱
+	 * @param int $is_send 是否转发短信
+	 * @return bool true-编辑成功;false-编辑失败
 	 **/
 	public function update_userself($user_id,$old_name,$user_name,$oldpasswd,$passwd,$user_phone,$user_email,$is_send){
 		$err=null;
@@ -1316,14 +1436,13 @@ class db{
 		if($passwd==""||$passwd==null)
 			$passwd=$oldpasswd;
 		$passwdd=md5($passwd);
-		if (($o_user_id=$this->has_user_name($user_name))&&$o_user_id!=$user_id)
+		if (($o_user_id=$this->get_user_id($user_name))&&$o_user_id!=$user_id)
 			$err[$i++]=("用户名已存在");
-		if($this->get_user_vi_name_pwd($old_name,$oldpasswd)==null)
+		if($this->get_user_id($old_name,$oldpasswd)<1)
 			$err[$i++]=("旧密码输入错误");
 		if($i==0){
-			$this->queries="UPDATE users SET user_name='".$user_name."',passwd='".$passwdd."',user_phone='".$user_phone."',user_email='".$user_email."',is_send=".$is_send." WHERE user_id=".$user_id;
-			$result=$this->get_result();
-			if(!$result)
+			$colvs=array('user_name'=>"'$user_name'",'passwd'=>"'$passwdd'",'user_phone'=>"'$user_phone'",'user_email'=>"'$user_email'",'is_send'=>$is_send);
+			if(!$this->update_table('users',$colvs,array('user_id'=>$user_id)))
 				$err[$i++]="修改用户失败，请联系管理员";
 			else
 				return true;
@@ -1333,21 +1452,21 @@ class db{
 	}
 
 	/**
-	 *简述：更新用户最后登陆时间
-	 *参数1[int]：用户ID
-	 *返回[bool]：ture-更新成功；false-更新失败
+	 * update_user_last_login_time
+	 * 更新用户最后登陆时间
+	 * @param int $user_id 用户ID
+	 * @return bool ture-更新成功;false-更新失败
 	 **/
 	public function update_user_last_login_time($user_id){
-		$this->queries="UPDATE users SET last_login_time=current_login_time,current_login_time=NOW() WHERE user_id=".$user_id;
-		$result=$this->get_result();
-		return $result;
+		return $this->update_table('users',array('last_login_time'=>'current_login_time','current_login_time'=>'NOW() '),array('user_id'=>$user_id));
 	}
 
 	/**
-	 *简述：删除用户
-	 *参数1[int]：用户ID
-	 *返回[bool]：ture-删除成功；false-删除失败
-	 **/ 
+	 * delete_user
+	 * 删除用户
+	 * @param int $user_id 用户ID
+	 * @return bool ture-删除成功;false-删除失败
+	 **/
 	public function delete_user($user_id){
 		$err=null;
 		$i=0;
@@ -1357,9 +1476,7 @@ class db{
 			$err[$i++]="权限不足，此用户无法删除";
 		if($i==0){
 			$user=$this->get_user($user_id);
-			$this->queries="DELETE FROM users WHERE user_id=".$user_id;
-			$result=$this->get_result();
-			if(!$result)
+			if(!$this->delete_table('users',array('user_id'=>$user_id)))
 				$err[$i++]="删除用户失败，请联系管理员";
 			else{
 				global $__USER;
@@ -1371,190 +1488,174 @@ class db{
 		return false;
 	}
 
-	/**
-	 *简述：是否存在某用户
-	 *参数1[int]：用户ID
-	 *返回[bool]:true-存在；false-不存在
-	 **/
-	protected function has_user($user_id){
-		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_id."'";
-		$result=$this->get_result();
-		if(!$result)
-			return false;
-		return true;
-	} 
-
-	/**
-	 *简述：是否存在某用户名
-	 *参数1[string]：用户名
-	 *返回[bool&int]:false-不存在，其他-用户ID
-	 **/
-	protected function has_user_name($user_name){
-		$this->queries="SELECT user_id FROM users WHERE user_name='".$user_name."'";
-		$rows=$this->get_rows();
-		if($rows!=null)
-			return $rows[0]['user_id'];
-		return false;
-	}
-
-	/**
-	 *简述：根据用户名和密码获取用户数据
-	 *参数1[string]：用户名
-	 *参数2[string]：密码
-	 *返回[null&array]:null-不存在或用户名密码错误，其他-用户信息数组
-	 **/
-	public function get_user_vi_name_pwd($user_name,$passwd){
-		$passwdd=md5($passwd);
-		$this->queries="SELECT * FROM users WHERE user_name='".$user_name."' AND passwd='".$passwdd."'";
-		$rows=$this->get_rows();
-		if($rows!=null)
-			return $rows[0];
-		return null;
-	}
-
-	public function get_user($user_id){
-		$this->queries="SELECT * FROM users WHERE user_id=".$user_id;
-		$rows=$this->get_rows();
-		if($rows!=null)
-			return $rows[0];
-		return null;
-
-	}
-	public function get_all_users(){
-		$this->set_pagination("users");
-		$this->queries="SELECT * FROM users WHERE user_role<>1 ORDER BY user_role ".$this->pgn['users']->limit;
-		$rows=$this->get_rows();
-		if(!$rows)
-			return null;
-		$usergroups=$this->get_table('usergroups','user_gid','*');
-		$usergroups[0]['user_gname']='默认';
-		foreach ($rows as $key => $row) {
-			$rows[$key]['user_gname']=$usergroups[$row['user_gid']]['user_gname'];
-		}
-		return $rows;
-	}
-
 	/******************
 	*ALARMS
 	******************/
+
+	/**
+	 * get_alarms
+	 * 获取报警信息列表
+	 * @param void
+	 * @return null/array null-无报警信息;array-二维数组
+	 **/
 	public function get_alarms(){
-		$this->set_pagination("alarms");
-		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC ".$this->pgn['alarms']->limit;
-		$rows=$this->get_rows();
-		$devsarr=$this->get_all_devs_info_index_id();
-		$groupsarr=$this->get_all_groups_info_index_id();
-		$linesarr=$this->get_all_lines_info_index_id();
+		$rows=$this->get_table('alarms',null,'*',array(),array('action_time DESC'),true);
+		$devs=$this->get_table('devs','dev_id','*');
+		$groups=$this->get_table('groups','group_id','*');
+		$lines=$this->get_table('liness','line_id','*');
 		if($rows){
 			foreach ($rows as $key=>$row) {
-				$rows[$key]['dev_number']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_number']:'设备已删除';
-				$rows[$key]['dev_phase']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_phase']:'设备已删除';
-				$rows[$key]['group_loc_name']=(isset($groupsarr[$devsarr[$row['dev_id']]['group_id']]))?($groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_loc'].'-'.$groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
+				$rows[$key]['dev_number']=(isset($devs[$row['dev_id']]))?$devs[$row['dev_id']]['dev_number']:'设备已删除';
+				$rows[$key]['dev_phase']=(isset($devs[$row['dev_id']]))?$devs[$row['dev_id']]['dev_phase']:'设备已删除';
+				$rows[$key]['group_loc_name']=(isset($groups[$devs[$row['dev_id']]['group_id']]))?($groups[$devs[$row['dev_id']]['group_id']]['group_loc'].'-'.$groups[$devs[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
 				
-				$rows[$key]['line_name']=(isset($linesarr[$devsarr[$row['dev_id']]['line_id']]))?$linesarr[$devsarr[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
+				$rows[$key]['line_name']=(isset($lines[$devs[$row['dev_id']]['line_id']]))?$lines[$devs[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
 			}
 		}
 		return $rows;
 	}
 
+	/**
+	 * get_last_alarms
+	 * 获取最近报警信息列表,默认最近20条
+	 * @param void
+	 * @return null/array null-无报警信息;array-二维数组
+	 **/
 	public function get_last_alarms(){
 		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC LIMIT 0,20";
 		$rows=$this->get_rows();
-		$devsarr=$this->get_all_devs_info_index_id();
-		$groupsarr=$this->get_all_groups_info_index_id();
-		$linesarr=$this->get_all_lines_info_index_id();
+		$devs=$this->get_table('devs','dev_id','*');
+		$groups=$this->get_table('groups','group_id','*');
+		$lines=$this->get_table('liness','line_id','*');
 		if($rows){
 			foreach ($rows as $key=>$row) {
-				$rows[$key]['dev_number']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_number']:'设备已删除';
-				$rows[$key]['dev_phase']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_phase']:'设备已删除';
-				$rows[$key]['group_loc_name']=(isset($groupsarr[$devsarr[$row['dev_id']]['group_id']]))?($groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_loc'].'-'.$groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
+				$rows[$key]['dev_number']=(isset($devs[$row['dev_id']]))?$devs[$row['dev_id']]['dev_number']:'设备已删除';
+				$rows[$key]['dev_phase']=(isset($devs[$row['dev_id']]))?$devs[$row['dev_id']]['dev_phase']:'设备已删除';
+				$rows[$key]['group_loc_name']=(isset($groups[$devs[$row['dev_id']]['group_id']]))?($groups[$devs[$row['dev_id']]['group_id']]['group_loc'].'-'.$groups[$devs[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
 				
-				$rows[$key]['line_name']=(isset($linesarr[$devsarr[$row['dev_id']]['line_id']]))?$linesarr[$devsarr[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
+				$rows[$key]['line_name']=(isset($lines[$devs[$row['dev_id']]['line_id']]))?$lines[$devs[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
 			}
 		}
 		return $rows;
 	}
+
+	/**
+	 * get_last_alarm_id
+	 * 获取上一条报警信息id
+	 * @param void
+	 * @return int 0-获取失败;其他-报警id
+	 **/
 	public function get_last_alarm_id(){
-		$this->queries="SELECT id FROM alarms ORDER BY id DESC LIMIT 0,1 ";
-		$rows=$this->get_rows();
-		if($rows)
-			return $rows[0]['id'];
+		$rows=$this->get_table('alarms',null,'max(id)');
+		if($rows&&count($rows)>0)
+			return $rows[0]['max(id)'];
 		return 0;
 	}
+	/**
+	 * get_alarm
+	 * 获取上一条报警信息id
+	 * @param void
+	 * @return int 0-获取失败;其他-报警id
+	 **/
 	public function get_alarm($id){
-		$this->queries="SELECT * FROM alarms where id=".$id;
-		$rows=$this->get_rows();
-		if($rows)
+		$rows=$this->get_table('alarms',null,'*',array('id'=>$id));
+		if($rows&&count($rows)>0)
 			return $rows[0];
 		return null;
 	}
+
+	/**
+	 * get_dev_alarms
+	 * 获取设备在某时间段内的报警信息列表
+	 * @uses alarms
+	 * @param int $dev_id 设备id
+	 * @param string $date_from 起始日期
+	 * @param string $date_to 结束日期
+	 * @return null/array null-无报警信息;array-二维数组
+	 **/
 	public function get_dev_alarms($dev_id,$date_from,$date_to){
 
-		$this->queries="SELECT * FROM alarms where dev_id=".$dev_id." AND action_time BETWEEN '".$date_from."' AND '".$date_to."' ORDER BY action_time";
-				$rows=$this->get_rows();
-		if($rows)
+		$rows=$this->get_table('alarms',null,'*',"dev_id=$dev_id AND action_time BETWEEN '$date_from' AND '$date_to'",array('action_time'));
+
+		if($rows&&count($rows)>0)
 			return $rows;
 		return null;
 	}
 
+	/**
+	 * get_histories
+	 * 获取历史信息(例行上传)
+	 * @param void
+	 * @return null/array null-无历史信息;array-二维数组
+	 **/
 	public function get_histories(){
-		$this->set_pagination("histories");
-		$this->queries="SELECT * FROM histories ORDER BY action_time DESC ".$this->pgn['histories']->limit;
-		$rows=$this->get_rows();
-		$devsarr=$this->get_all_devs_info_index_id();
-		$groupsarr=$this->get_all_groups_info_index_id();
-		$linesarr=$this->get_all_lines_info_index_id();
+		$rows=$this->get_table('histories',null,'*',array(),array('action_time DESC'),true);
+		$devs=$this->get_table('devs','dev_id','*');
+		$groups=$this->get_table('groups','group_id','*');
+		$lines=$this->get_table('liness','line_id','*');
 		if($rows){
 			foreach ($rows as $key=>$row) {
-				$rows[$key]['dev_number']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_number']:'设备已删除';
-				$rows[$key]['dev_phase']=(isset($devsarr[$row['dev_id']]))?$devsarr[$row['dev_id']]['dev_phase']:'设备已删除';
-				$rows[$key]['group_loc_name']=(isset($groupsarr[$devsarr[$row['dev_id']]['group_id']]))?($groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_loc'].'-'.$groupsarr[$devsarr[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
+				$rows[$key]['dev_number']=(isset($devs[$row['dev_id']]))?$devs[$row['dev_id']]['dev_number']:'设备已删除';
+				$rows[$key]['dev_phase']=(isset($devs[$row['dev_id']]))?$devs[$row['dev_id']]['dev_phase']:'设备已删除';
+				$rows[$key]['group_loc_name']=(isset($groups[$devs[$row['dev_id']]['group_id']]))?($groups[$devs[$row['dev_id']]['group_id']]['group_loc'].'-'.$groups[$devs[$row['dev_id']]['group_id']]['group_name']):'杆塔已删除';
 				
-				$rows[$key]['line_name']=(isset($linesarr[$devsarr[$row['dev_id']]['line_id']]))?$linesarr[$devsarr[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
+				$rows[$key]['line_name']=(isset($lines[$devs[$row['dev_id']]['line_id']]))?$lines[$devs[$row['dev_id']]['line_id']]['line_name']:'线路已删除';
 			}
 		}
 		return $rows;
 	}
 
-	public function output_devs_to_excel(){
-		$this->queries="SELECT * FROM devs";
-		$rows=$this->get_rows();
-		if(!$rows)
+	/**
+	 * output_devs_to_excel
+	 * 导出所有设备信息到excel表
+	 * @param void
+	 * @return null/array null-无设备信息;array-二维数组
+	 **/
+	public function output_devs_to_excel(){	
+		$rows=$this->get_table('devs',null,'*',array(),array('line_id','group_id','dev_phase'));
+		if(!$rows||count($rows)<0)
 			return null;
-		$rerows=null;
-		$groups=$this->get_all_groups_info_index_id();
-		$lines=$this->get_all_lines_info_index_id();
+		$groups=$this->get_table('groups','group_id','*');
+		$lines=$this->get_table('liness','line_id','*');
 		foreach ($rows as $key => $row) {
-			$rerows[$key]=$row;
-			$rerows[$key]['group_name']=(isset($groups[$row['group_id']]['group_name']))?$groups[$row['group_id']]['group_name']:'无';
-			$rerows[$key]['group_loc']=(isset($groups[$row['group_id']]['group_loc']))?$groups[$row['group_id']]['group_loc']:'无';
-			$rerows[$key]['coor_long']=(isset($groups[$row['group_id']]['coor_long']))?$groups[$row['group_id']]['coor_long']:0.0;
-			$rerows[$key]['coor_lat']=(isset($groups[$row['group_id']]['coor_lat']))?$groups[$row['group_id']]['coor_lat']:0.0;
-			$rerows[$key]['line_name']=(isset($lines[$row['line_id']]['line_name']))?$lines[$row['line_id']]['line_name']:'无';
+			$rows[$key]['group_name']=(isset($groups[$row['group_id']]['group_name']))?$groups[$row['group_id']]['group_name']:'无';
+			$rows[$key]['group_loc']=(isset($groups[$row['group_id']]['group_loc']))?$groups[$row['group_id']]['group_loc']:'无';
+			$rows[$key]['coor_long']=(isset($groups[$row['group_id']]['coor_long']))?$groups[$row['group_id']]['coor_long']:0.0;
+			$rows[$key]['coor_lat']=(isset($groups[$row['group_id']]['coor_lat']))?$groups[$row['group_id']]['coor_lat']:0.0;
+			$rows[$key]['line_name']=(isset($lines[$row['line_id']]['line_name']))?$lines[$row['line_id']]['line_name']:'无';
 		}
-		return $rerows;
+		return $rows;
 	}
+
+	/**
+	 * input_devs_from_excel
+	 * 导入设备,保守导入
+	 * @param array 设备信息的二维数组
+	 * @return array 错误信息数组
+	 **/
 	public function input_devs_from_excel($devs){
 		$i=0;
 		$err=null;
 		foreach ($devs as $dev) {
-			$dev_id=$this->get_dev_vi_number($dev['dev_number']);
-			if($dev_id!=0){
+			$dev_id=$this->get_dev_id($dev['dev_number']);
+			if($dev_id>0){
 				$err[$i++]="设备[".$dev['dev_number']."]已存在";
 				continue;
 			}
-			$line_id=($dev['line_name']=='无')?0:$this->get_line_vi_name($dev['line_name'])['line_id'];
+			$line_id=($dev['line_name']=='无')?0:$this->get_line_id($dev['line_name']);
 			if($line_id==0&&$dev['line_name']!='无'){
 				$this->add_line($dev['line_name']);
-				$line_id=$this->get_line_vi_name($dev['line_name']);
+				$line_id=$this->get_line_id($dev['line_name']);
 				$err[$i++]="新插入了线路[".$dev['line_name']."]";
 			}
 			$group_id=($dev['group_name']=='无')?0:$this->get_group_id($dev['group_name'],$dev['group_loc']);
+			echo $line_id;
 			if($group_id==0&&$dev['group_name']!='无'){
-				$this->add_group($dev['group_name'],$dev['group_loc'],$line_id,0,$dev['coor_long'],$dev['coor_lat']);
+				$this->add_group($dev['group_name'],$dev['group_loc'],$line_id,0,$dev['coor_long'],$dev['coor_lat'],0);
 				$group_id=$this->get_group_id($dev['group_name'],$dev['group_loc']);
-				$err[$i++]="新插入了杆塔[".$dev['line_name']."]";
+				$err[$i++]='新插入了杆塔['.$dev['group_loc'].'-'.$dev['group_name'].']';
 			}
-			elseif(!$this->is_group_has_line($group_id,$line_id)){
+			elseif(!$this->is_group_on_line($group_id,$line_id)){
 				$err[$i++]="设备[".$dev['dev_number']."]插入失败，导入的杆塔未绑定相应线路";
 				continue;
 			}
@@ -1566,19 +1667,6 @@ class db{
 			}
 		}
 		return $err;
-	}
-	/*简述：设置某个数据表的分页码
-	 *参数1[string]：需要设置的数据表名
-	 *返回：无
-	 */
-	public function set_pagination($table){
-		$this->queries="SELECT COUNT(*) FROM ".$table;
-		$rows=$this->get_rows();
-		$this->total_results=empty($rows)?0:$rows[0][0];
-		if($table=="users")
-			$this->total_results--;
-		$this->pgn[$table]=new pagination($this->total_results);
-		$this->pgn_html=$this->pgn[$table]->showpgn();
 	}
 }
 ?>

@@ -6,17 +6,20 @@ header("Content-type:application/json; charset=UTF-8");
 global $mydb;
 $data=null;
 $errorsinfo=null;
-if($_POST['mode']==0){//添加
+if($_POST['mode']==0){
+	//添加
 	$isadd=$mydb->add_usergroup($_POST['user_gname']);
 	$errorsinfo=$mydb->__get('last_errors');
 	if($isadd)
 		$data['user_gid']=$mydb->get_user_gid($_POST['user_gname']);
 }
-elseif($_POST['mode']==1){//修改
+elseif($_POST['mode']==1){
+	//修改
 	$mydb->update_usergroup($_POST['user_gid'],$_POST['user_gname']);
 	$errorsinfo=$mydb->__get('last_errors');
 }
-else{//修改
+else{
+	//删除
 	$mydb->delete_usergroup($_POST['user_gid']);
 	$errorsinfo=$mydb->__get('last_errors');
 }

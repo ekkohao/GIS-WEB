@@ -6,8 +6,7 @@
 		<?php 
 			get_header();
 			global $__USER,$mydb;
-			
-										
+							
 			$rolearr=['','系统管理员','超级管理员','设备管理员','','普通用户'];
 		?>	
 	
