@@ -135,12 +135,13 @@ $(document).ready(function(){
 		$('.form-newgro #inputGroLoc').val("");
 		$('.form-newgro #selectLine1').val(0);
 		$('.form-newgro #selectLine2').val(0);
+		$('.form-newgro #selectUserGName').val(0);
 		$('.form-newgro #inputCoor').val("");
 		$('.form-newgro button.btn').text("确认添加");
 		$('.form-newdev .error').html("").hide();
 		$('html,body').animate({scrollTop:$('.widget-click').offset().top}, 400); 
 	});
-	var old_gro_name,old_gro_loc,old_line_id1,old_line_id2,old_coor;
+	var old_gro_name,old_gro_loc,old_line_id1,old_line_id2,old_coor,old_user_gid;
 	$('.form-newdev a.newdev-l-editgro').click(function(){
 		$('.form-newdev .error').html("").hide();
 		var gro_id=$('.form-newdev #selectGroup').val();
@@ -172,6 +173,8 @@ $(document).ready(function(){
 					else
 						sLL.next('label').find('a.edit-line').show();
 					old_coor=t.data['coor_long']+','+t.data['coor_lat'];
+					old_user_gid=t.data['user_gid']; 
+					$('.form-newgro #selectUserGName').val(old_user_gid);
 					$('.form-newgro #inputCoor').val(old_coor);
 					$('.form-newgro button.btn').text("确认修改");
 					if($('.widget-click').hasClass('widget-hidden'))
@@ -207,9 +210,10 @@ $(document).ready(function(){
 		var line_id1=$('.form-newgro #selectLine1').val().replace(/[ ]/g,"");
 		var line_id2=$('.form-newgro #selectLine2').val().replace(/[ ]/g,"");
 		var coor=$('.form-newgro #inputCoor').val().replace(/[ ]/g,"");
+		var user_gid=$('.form-newgro #selectUserGName').val();
 		var reg =/^[-\+]?\d+(\.\d+)\,[-\+]?\d+(\.\d+)$/;
 		var hasError=0;
-		if(gro_haschange==false&&mode==1&&old_gro_name==gro_name&&old_gro_loc==gro_loc&&old_line_id1==line_id1&&old_line_id2==line_id2&&old_coor==coor){
+		if(gro_haschange==false&&mode==1&&old_gro_name==gro_name&&old_user_gid==user_gid&&old_gro_loc==gro_loc&&old_line_id1==line_id1&&old_line_id2==line_id2&&old_coor==coor){
 			$('.form-newgro .error-msg').html("新数据与旧数据相同");
 			$('.form-newgro span.error').show();
 			btn.attr('disabled',false);
@@ -237,7 +241,7 @@ $(document).ready(function(){
 			btn.attr('disabled',false);
 			return;
 		}
-		var data="gro_id="+gro_id+"&gro_name="+gro_name+"&gro_loc="+gro_loc+"&line_id1="+line_id1+"&line_id2="+line_id2+"&coor="+coor+"&mode="+mode;
+		var data="gro_id="+gro_id+"&usergid="+user_gid+"&gro_name="+gro_name+"&gro_loc="+gro_loc+"&line_id1="+line_id1+"&line_id2="+line_id2+"&coor="+coor+"&mode="+mode;
 		$.ajax({
 		        type: "post",
 		        url: "pages/groups/newgroadd-ajax.php",
@@ -257,10 +261,11 @@ $(document).ready(function(){
 							var hasselect=$('.form-newdev #selectLine').val();
 							updateLine(gro_id,hasselect);
 							gro_haschange=false;
+							$('.form-newdev #selectGroup .group-'+gro_id).html(gro_loc+"-"+gro_name);
 		        		}
 		        		else{
 		        			$('.form-newgro .success-msg').html("杆塔["+gro_name+"]添加成功").show();
-		        			$('.form-newdev #selectGroup').append('<option selected="selected" class="'+t.data.gro_id+'" value="'+t.data.gro_id+'">'+gro_loc+'-'+gro_name+'</option>');
+		        			$('.form-newdev #selectGroup').append('<option selected="selected" class="group-'+t.data.gro_id+'" value="'+t.data.gro_id+'">'+gro_loc+'-'+gro_name+'</option>');
 		        			updateLine(t.data.gro_id,0);
 
 		        		}

@@ -956,11 +956,19 @@ class db{
 		$this->set_errors($i,$err);
 		return false;
 	}
+
+	/**
+	 * get_lines_on_group
+	 * 返回一个二维数组,存储一个杆塔上的线路信息数组
+	 * @uses newdev-ajax.php
+	 * @param int $group_id 杆塔id
+	 * @return null/array null-无绑定此杆塔的线路,array-二维数组
+	 **/	
 	//返回某杆塔绑定的所有线路数组
-	// public function get_lines_vi_gid($group_id){
-	// 	$this->queries="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
-	// 	return $this->get_rows();
-	// }
+	public function get_lines_on_group($group_id){
+		$this->queries="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
+		return $this->get_rows();
+	}
 	// public function add_group_vi_line_name($group_name,$group_loc,$line_name=null,$line_name2=null,$coor_long,$coor_lat){
 		
 	// 	$line_id=$this->get_line_id($line_name);
