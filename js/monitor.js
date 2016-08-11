@@ -95,7 +95,7 @@ function listeningEvent(){
         		alarmRing(point,title,content);
         		if($('.widget-alarmslist').hasClass('tohide'))
         			$('.widget-alarmslist').removeClass('tohide');
-        		$('.table-alarmslist tbody').append('<tr><td>'+t.data.dev.dev_number+'</td><td>'+t.data.alarm.action_time+'</td><td>'+t.data.alarm.action_num+'</td><td>'+t.data.alarm.i_num+'</td><td>'+t.data.alarm.tem+'</td><td>'+t.data.alarm.hum+'</td><td>'+t.data.dev.group_loc_name+'<br />'+t.data.dev.line_name+'-'+t.data.dev.dev_phase+'</td></tr>');
+        		$('.table-alarmslist tbody').append('<tr><td>'+t.data.dev.dev_number+'</td><td>'+t.data.alarm.action_time+'</td><td>'+t.data.alarm.action_num+'</td><td>'+t.data.alarm.i_num+'</td><td>'+t.data.alarm.tem+'</td><td>'+t.data.alarm.hum+'</td><td>'+t.data.dev.group_loc+'-'+t.data.dev.group_name+'<br />'+t.data.dev.line_name+'-'+t.data.dev.dev_phase+'</td></tr>');
         		$('#warning_mp3')[0].play();
         	}
         }

@@ -1613,6 +1613,153 @@ class db{
 		return $rows;
 	}
 
+	/*************************************************
+	 * MULTISITES
+	 *************************************************/
+	/**
+	 * get_site_id
+	 * 获取站点id
+	 * @param string $site_name
+	 * @return int 0-无此站点;其他-站点id
+	 **/
+	public function get_site_id($site_name){
+		$sites=$this->get_table('multisites',null,'site_id',array('site_name'=>$site_name));
+		if($sites&&count($sites)>0)
+			return $sites[0]['site_id'];
+		return 0;
+	}
+
+	/**
+	 * get_site
+	 * 获取站点信息
+	 * @param int $site_id 站点id
+	 * @return null/array null-无此站点信息;array-一维数组
+	 **/
+	public function get_site($site_id){
+		$sites=$this->get_table('multisites',null,'*',array('site_id'=>$site_id));
+		if($sites&&count($sites)>0)
+			return $sites[0];
+		return null;
+	}
+
+	/**
+	 * get_all_sites
+	 * 获取站点列表信息
+	 * @param void
+	 * @return null/array null-无站点;array-二维数组
+	 **/
+	public function get_all_sites(){
+		$sites=$this->get_table('multisites',null,'*',array(),array('site_name'),true);
+		if($sites&&count($sites)>0)
+			return $sites;
+		return null;
+	}
+
+	/**
+	 * add_site
+	 * 添加站点
+	 * @param string $site_name 站点名
+	 * @param string $site_remark 站点id
+	 * @param string $dbhost 数据库主机
+	 * @param string $dbname 数据表名
+	 * @param string $dbuser 数据库用户名
+	 * @param string $dbpasswd 数据库密码
+	 * @param int $is_use_default 是否使用默认数据库
+	 * @return bool true-添加成功;false-添加失败
+	 **/
+	public function add_site($site_name,$site_remark,$dbhost,$dbname,$dbuser,$dbpasswd,$is_use_default){
+		$err=null;
+		$i=0;
+		if($is_use_default==1){
+			$dbhost=DB_HOST;
+			$dbname=DB_NAME;
+			$dbuser=DB_USER;
+			$dbpasswd=DB_PASSWORD;
+		}
+
+		if(!preg_match("/^[a-z\s]+$/",$site_name))
+			$err[$i++]='站点名格式有误,只能输入小写英文字母';
+		elseif(!set_site_conf_file($site_name,$dbhost,$dbname,$dbuser,$dbpasswd))
+			$err[$i++]='建立配置文件失败,请确认conf文件夹可写';
+		if($i==0){
+			if(!$this->insert_table('multisites',array('site_name'=>"'$site_name'",'site_remark'=>"'$site_remark'"))){
+				$err[$i++]='新建站点失败,请稍后再试';
+				delete_site_conf_file($site_name);
+			}
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name'].'添加了站点'.$site_name);
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;
+	}
+	/**
+	 * update_site
+	 * 编辑站点
+	 * @param int $site_id 站点id
+	 * @param string $site_name 站点名
+	 * @param string $site_remark 站点id
+	 * @param string $dbhost 数据库主机
+	 * @param string $dbname 数据表名
+	 * @param string $dbuser 数据库用户名
+	 * @param string $dbpasswd 数据库密码
+	 * @param int $is_use_default 是否使用默认数据库
+	 * @return bool true-编辑成功;false-编辑失败
+	 **/
+	public function update_site($site_id,$site_name,$site_remark,$dbhost,$dbname,$dbuser,$dbpasswd,$is_use_default){
+		$err=null;
+		$i=0;
+		if($is_use_default==1){
+			$dbhost=DB_HOST;
+			$dbname=DB_NAME;
+			$dbuser=DB_USER;
+			$dbpasswd=DB_PASSWORD;
+		}
+		if(!preg_match("/^[a-z\s]+$/",$site_name))
+			$err[$i++]='站点名格式有误,只能输入小写英文字母';
+		elseif(!set_site_conf_file($site_name,$dbhost,$dbname,$dbuser,$dbpasswd))
+			$err[$i++]='建立配置文件失败,请确认conf文件夹可写';
+		if($i==0){
+
+			if(!$this->update_table('multisites',array('site_name'=>"'$site_name'",'site_remark'=>"'$site_remark'"),array('site_id'=>$site_id)))
+				$err[$i++]='更新站点失败,请稍后再试';
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name'].'修改了站点'.$site_name);
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;
+	}
+	/**
+	 * delete_site
+	 * 删除站点
+	 * @param int $site_id 站点id
+	 * @return bool true-删除成功;false-删除失败
+	 **/
+	public function delete_site($site_id){
+		$err=null;
+		$i=0;
+		$site=$this->get_site($site_id);
+		if(empty($site))
+			$err[$i++]='站点不存在或已删除';
+		elseif(!delete_site_conf_file($site['site_name']))
+			$err[$i++]='删除配置文件失败,请检查conf文件夹全写是否可写';
+		if($i==0){
+			if(!$this->delete_table('multisites',array('site_id'=>$site_id)))
+				$err[$i++]='删除失败,请稍后再试';
+			else{
+				global $__USER;
+				$this->add_dolog($__USER['user_name'].'删除了站点'.$site['site_name']);
+				return true;
+			}
+		}
+		$this->set_errors($i,$err);
+		return false;
+	}
 	/**
 	 * output_devs_to_excel
 	 * 导出所有设备信息到excel表

@@ -1,6 +1,6 @@
 	<header id="header">
         <div class="container clearfix">
-            <h1 class="center-block">科鼎地理信息服务系统</h1>
+            <h1 class="center-block">线路型避雷器在线监测系统</h1>
        
 	        <nav class="pull-left"><ul class="site-nav site-navbar clearfix">
 					<li class="navto-home<?php echo ($_GET['page']=='home')?" active":""; ?>"><a href="index.php">首页</a></li>

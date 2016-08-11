@@ -1,10 +1,12 @@
 <?php
+//判断身份
 function is_current_user_can_see($role){
 	global $__USER;
 	if($__USER['user_role']>$role)
 		return false;
 	return true;
 }
+//验证身份
 function current_user_role_identify($role){
 	global $__USER;
 	if($__USER['user_role']>$role){
@@ -12,6 +14,15 @@ function current_user_role_identify($role){
 		exit();
 	}
 	return;
+}
+//多站点是否开启
+function is_multisite_on(){
+	if(defined('MULTISITE_ON')&&defined('MULTISITE_TOP_DOMAIN')&&MULTISITE_ON=='true'){
+		$t=strpos($_SERVER['HTTP_HOST'],'kedinggis.com');
+		//if($t=0||($t>0&&substr($_SERVER['HTTP_HOST'], 0,$t)=='www'))
+			return true;
+	}
+	return false;
 }
 //加载footer.php
 function get_footer($file=null){
@@ -85,7 +96,7 @@ function hao_require_once($filepath){
 		exit();
 	}
 }
-//单页面入后函数，$keyname为url变量名，arr位变量取值范围，arr[0]位默认值
+//单页面入口函数，$keyname为url变量名，arr位变量取值范围，arr[0]位默认值
 function hao_load_in($keyname,$arr,$dir){
 	if(!isset($_GET[$keyname])||!in_array($_GET[$keyname],$arr))
 		$_GET[$keyname]=$arr[0];
@@ -106,6 +117,7 @@ function get_head(){
 	$html.='</head>';
 	echo $html;
 }
+//获取客户端ip
 function get_ip(){
 	$ip="未知";
 	if ( !empty($_SERVER['HTTP_X_FORWARDED_FOR']))   
@@ -115,5 +127,87 @@ function get_ip(){
 	elseif(!empty($_SERVER["HTTP_CLIENT_IP"]))
   		$ip = $_SERVER["HTTP_CLIENT_IP"];
 	return $ip;
+}
+//设置多站点配置文件
+function set_site_conf_file($site_name,$dbhost,$dbname,$dbuser,$dbpasswd){
+	if ( !file_exists( ABSPATH . '/conf-sample.php' ) )
+		return false;
+	$conf_file = file( ABSPATH . '/conf-sample.php' );
+	$path_to_write = ABSPATH . '/conf/conf-'.$site_name.'.php';
+
+	foreach ( $conf_file as $line_num => $line ) {
+		if ( ! preg_match( '/^define\(\'([A-Z_]+)\',([ ]+)/', $line, $match ) )
+			continue;
+
+		$constant = $match[1];
+		$padding  = $match[2];
+
+		switch ( $constant ) {
+			case 'DB_NAME'     :
+				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( $dbname , "\\'" ) . "');\r\n";
+				break;
+			case 'DB_USER'     :
+				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( $dbuser , "\\'" ) . "');\r\n";
+				break;
+			case 'DB_PASSWORD' :
+				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( $dbpasswd , "\\'" ) . "');\r\n";
+				break;
+			case 'DB_HOST'     :
+				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( $dbhost , "\\'" ) . "');\r\n";
+				break;
+			case 'DB_PREFIX'     :
+				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( $site_name.'_' , "\\'" ) . "');\r\n";
+				break;
+			default:
+				continue;
+		}
+	}
+
+	$handle = fopen( $path_to_write, 'w' );
+	if(!$handle)
+		return false;
+	foreach ( $conf_file as $line ) {
+		fwrite( $handle, $line );
+	}
+	fclose( $handle );
+	chmod( $path_to_write, 0666 );
+	return true;
+
+}
+function read_site_conf_file($site_name,&$dbhost,&$dbname,&$dbuser,&$dbpasswd){
+	$path_to_read = ABSPATH . '/conf/conf-'.$site_name.'.php';
+	if ( !file_exists( $path_to_read ) )
+		return false;
+	$conf_file = file( $path_to_read);
+	foreach ( $conf_file as $line_num => $line ) {
+		if ( ! preg_match( '/^define\(\'([A-Z_]+)\',[ ]+\'([^\']+)\'/', $line, $match ) )
+			continue;
+
+		$constant = $match[1];
+		$read=$match[2];
+		switch ( $constant ) {
+			case 'DB_NAME'     :
+				$dbname=$read;
+				break;
+			case 'DB_USER'     :
+				$dbuser=$read;
+				break;
+			case 'DB_PASSWORD' :
+				$dbpasswd=$read;
+				break;
+			case 'DB_HOST'     :
+				$dbhost=$read;
+				break;
+			default:
+				continue;
+		}
+	}
+}
+function delete_site_conf_file($site_name){
+	$path_to_delete = ABSPATH . '/conf/conf-'.$site_name.'.php';
+	if ( file_exists( $path_to_delete ) )
+		return unlink($path_to_delete);
+	else
+		return true;
 }
 ?>

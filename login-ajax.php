@@ -8,7 +8,7 @@ global $mydb;
 $user_name = htmlspecialchars($_POST['u']);
 $passwd = htmlspecialchars($_POST['p']);
 $user_id=$mydb->get_user_id($user_name, $passwd);
-if($user){
+if($user_id>0){
 	$_SESSION['user_id']=$user_id;
 	$mydb->update_user_last_login_time($user_id);
 	$stat=1;

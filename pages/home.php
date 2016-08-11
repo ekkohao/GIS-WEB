@@ -53,6 +53,14 @@
 				  			</div>
 				  			<?php
 				  			if(is_current_user_can_see(1)){
+				  				if(is_multisite_on()){
+				  			?>
+				  			<div class="bignav-box">
+				  				<a class="bignav-title"  href="index.php?page=multisites"><i class="fa fa-chain-broken" aria-hidden="true"></i>
+站点管理</a>
+				  			</div>
+				  			<?php
+				  				}
 				  			?>
 					  			<div class="bignav-box">
 					  				<a class="bignav-title" href="index.php?page=dologs"><i class="fa fa-file-o" aria-hidden="true"></i>
