@@ -132,6 +132,7 @@ $group=$mydb->get_group($_GET['groid']);
 				<label for="selectLine" class="col-sm-3 control-label"></label>
 				<div class="col-sm-6">
 					<button type="submit" class="btn btn-success">确定修改</button>
+					<a href="index.php?page=groups&action=groupslist" class="btn btn-warning">返回杆塔列表</a>
 					<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
 				</div>
 			</div>

@@ -56,7 +56,7 @@
 				  				if(is_multisite_on()){
 				  			?>
 				  			<div class="bignav-box">
-				  				<a class="bignav-title"  href="index.php?page=multisites"><i class="fa fa-chain-broken" aria-hidden="true"></i>
+				  				<a class="bignav-title"  href="index.php?page=multisites"><i class="fa fa-globe" aria-hidden="true"></i>
 站点管理</a>
 				  			</div>
 				  			<?php

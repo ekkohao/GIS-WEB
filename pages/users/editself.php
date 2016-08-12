@@ -64,6 +64,7 @@
 			<label for="" class="col-sm-3 control-label"></label>
 			<div class="col-sm-6">
 				<button type="submit" class="btn btn-success">确定修改</button>
+				<a href="index.php" class="btn btn-warning">返回首页</a>
 				<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
 			</div>
 		</div>

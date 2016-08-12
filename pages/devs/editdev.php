@@ -12,7 +12,7 @@ $dev=$mydb->get_dev($_GET['devid']);
 	<h3>添加新设备</h3>
 	<?php
 	if($dev){
-		$lines=$mydb->get_lines_vi_gid($dev['group_id']);
+		$lines=$mydb->get_lines_on_group($dev['group_id']);
 	?>
 		<form class="form-horizontal form-newdev form-editdev">
 			<div class="form-group">
@@ -100,6 +100,7 @@ $dev=$mydb->get_dev($_GET['devid']);
 				<label for="selectLine" class="col-sm-3 control-label"></label>
 				<div class="col-sm-6">
 					<button type="submit" class="btn btn-success">确定修改</button>
+					<a href="index.php?page=devs&action=devslist" class="btn btn-warning">返回设备列表</a>
 					<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
 				</div>
 			</div>

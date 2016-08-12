@@ -474,7 +474,7 @@ table.table-userlist>tbody .notsend{
         height:260px;
     }
     /*删除线路确认框*/
-    .pop-delline .msgbox,.pop-delgro .msgbox,.pop-deldev .msgbox,.pop-deluser .msgbox,.pop-delug .msgbox{
+    .pop-delsite .msgbox,.pop-delline .msgbox,.pop-delgro .msgbox,.pop-deldev .msgbox,.pop-deluser .msgbox,.pop-delug .msgbox{
         text-align:center;
         position: absolute;
         margin: auto;

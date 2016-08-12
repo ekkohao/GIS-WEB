@@ -5,6 +5,7 @@ $(document).ready(function(){
 	var old_dbname=$(".form-newsite #inputDBname").val();
 	var old_dbuser=$(".form-newsite #inputDBuser").val();
 	var old_dbpasswd=$(".form-newsite #inputDBpasswd").val();
+	var site_id=0;
 	modeName=['添加','修改','删除'];
 	$('.form-newsite').submit(function(e){
 		e.preventDefault();
@@ -17,7 +18,7 @@ $(document).ready(function(){
 		var is_use_default=$('#checkToUseDefault').is(':checked')?1:0;
 		var reg_site_name = /^[a-z]+$/;
 		var hasError=0;
-		var site_id=0;
+		
 		$('.form-newsite span.error').html("").hide();
 		var btn=$('.form-newsite button.btn');
 		btn.attr("disabled","disabled");
@@ -78,5 +79,54 @@ $(document).ready(function(){
 		else
 			$('.form-tolock input').attr('disabled',false);
 	});
-	
+	var changeTr;
+	//删除
+	$('.table-multisite tbody').on('click','span.delete',function(e){
+		e.preventDefault();
+		changeTr=$(this).parents('tr:first');
+		mode=2;
+		$('.msgbox span.msg-site-name').html(changeTr.find('td:eq(1) strong').html());
+		site_id=changeTr.find('td:first input').val();
+		$('.pop-box.pop-delsite').fadeIn(200);
+		$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).focus();
+		$('.msgbox .error').html('');
+	});
+	$('.remove-x,.pop-box .msgbox .btn-del-cancel').click(function(){
+		$(this).parents('.pop-box').fadeOut(200);
+		 //msgReset();
+	});
+	//删除确认click事件
+	$('.pop-box .msgbox .btn-del-commit').click(function(e){
+		$(this).attr("disabled","disabled");
+		$('.msgbox .error').html("");
+		var data="mode="+mode+"&site_id="+site_id;
+		$.ajax({
+		        type: "post",
+		        url: "pages/multisites/newsiteadd-ajax.php",
+		        dataType: "json",	        
+		        data: data,
+		        //beforeSend: LoadFunction, //加载执行方法    
+		        //error: errorFunction,  //错误执行方法    
+		        success: function (t) {
+		        	if(t.errorsinfo==null||t.errorsinfo.count==0){
+		        		$('.msgbox .success-msg').html("删除成功").show();
+		        		changeTr.remove();
+		        		return;
+		        	}
+		        	else {
+		        		$('.msgbox .error-msg').html("");
+		        		for(var i=0;i<t.errorsinfo.count;i++){
+		        			$('.msgbox .error-msg').append(t.errorsinfo.errors[i]+'<br />');
+		        		}
+		        		$('.msgbox .error-msg').show();
+		        		$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
+		        	}
+		        },
+		        error: function () {
+		        	$('.msgbox .error-msg').html('网络错误，请稍后再试').show();
+		        	$('.pop-box .msgbox .btn-del-commit').attr("disabled",false).html("重试");
+		        }
+		 });
+
+	});
 })

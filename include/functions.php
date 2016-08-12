@@ -19,7 +19,7 @@ function current_user_role_identify($role){
 function is_multisite_on(){
 	if(defined('MULTISITE_ON')&&defined('MULTISITE_TOP_DOMAIN')&&MULTISITE_ON=='true'){
 		$t=strpos($_SERVER['HTTP_HOST'],'kedinggis.com');
-		//if($t=0||($t>0&&substr($_SERVER['HTTP_HOST'], 0,$t)=='www'))
+		if($t=0||($t>0&&substr($_SERVER['HTTP_HOST'], 0,$t)=='www.'))
 			return true;
 	}
 	return false;
@@ -158,6 +158,9 @@ function set_site_conf_file($site_name,$dbhost,$dbname,$dbuser,$dbpasswd){
 			case 'DB_PREFIX'     :
 				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( $site_name.'_' , "\\'" ) . "');\r\n";
 				break;
+			case 'SITE_URL'     :
+				$conf_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( 'http://'.$site_name.'.kedinggis.com' , "\\'" ) . "');\r\n";
+				break;				
 			default:
 				continue;
 		}

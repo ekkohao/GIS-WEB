@@ -12,11 +12,11 @@ define('DB_CHARSET', 'utf8');
 /** 数据库整理类型。如不确定请勿更改 */
 define('DB_COLLATE','');
 /** 数据库前缀 **/
-define('DB_PREFIX', '1');
+define('DB_PREFIX', 'h_');
 /*分页每页所显示结果数*/
 define('PGN_SIZE','50');
 /** 域名地址 */
-define('SITE_URL','http://www.kedinggis.com');
+define('SITE_URL', 'http://www.kedinggis.com');
 
 define('H_DEBUG', 'false');
 /** WordPress目录的绝对路径。 */

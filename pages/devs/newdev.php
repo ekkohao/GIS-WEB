@@ -64,6 +64,7 @@
 			<label for="selectLine" class="col-sm-3 control-label"></label>
 			<div class="col-sm-6">
 				<button type="submit" class="btn btn-success">确定添加</button>
+				<a href="index.php?page=devs&action=devslist" class="btn btn-warning">返回设备列表</a>
 				<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
 			</div>
 		</div>
@@ -184,6 +185,7 @@
 			<label for="selectLine" class="col-sm-3 control-label"></label>
 			<div class="col-sm-6">
 				<button type="submit" class="btn btn-success">确定添加</button>
+				
 				<label><span class="error error-msg"></span><span class="error success-msg"></span></label>
 			</div>
 		</div>

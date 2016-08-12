@@ -19,7 +19,7 @@ class db{
 	//分页的html
 	protected $pgn_html=null;
 	//数据库前缀
-	var $prefix = '';
+	protected $prefix = '';
 	//数据库连接句柄
 	protected $dbcon;
 	//是否数据库已连接
@@ -32,6 +32,7 @@ class db{
 		/*若存在mysqli模块则启用*/
 		if ( function_exists( 'mysqli_connect' ) ) 
 			$this->is_use_mysqli = true;
+		$this->prefix=DB_PREFIX;
 		$this->db_connect();
 	}
 	/** 析构函数 **/
@@ -359,10 +360,10 @@ class db{
 	 * @return void
 	 **/
 	public function set_pagination($table){
-		$this->queries="SELECT COUNT(*) FROM ".$table;
+		$this->queries="SELECT COUNT(*) FROM ".$this->prefix.$table;
 		$rows=$this->get_rows();
 		$this->total_results=empty($rows)?0:$rows[0][0];
-		if($table=="users")
+		if(strpos($table,"users")>=0)
 			$this->total_results--;
 		$this->pgn[$table]=new pagination($this->total_results);
 		$this->pgn_html=$this->pgn[$table]->showpgn();
@@ -439,7 +440,7 @@ class db{
 		$colss=($cols=='*')?'*':($index==null)?$cols:$cols.','.$index;
 		if($is_set_pgn)
 			$this->set_pagination($table);
-		$this->queries='SELECT '.$colss.' FROM '.$table;
+		$this->queries='SELECT '.$colss.' FROM '.$this->prefix.$table;
 		if(!empty($where))
 			$this->queries.=' WHERE '.$where;
 		if(!empty($orderby))
@@ -480,7 +481,7 @@ class db{
 		}
 		$keystr=substr($keystr, 1);
 		$valuestr=substr($valuestr, 1);
-		$this->queries='INSERT INTO `'.$table.'`('.$keystr.') VALUES('.$valuestr.')';
+		$this->queries='INSERT INTO `'.$this->prefix.$table.'`('.$keystr.') VALUES('.$valuestr.')';
 		return $this->get_result();
 	}
 	/**
@@ -499,7 +500,7 @@ class db{
 		foreach ($arrays as $key => $value) 
 				$setstr.=",`$key`=$value";
 		$setstr=substr($setstr, 1);
-		$this->queries='UPDATE `'.$table.'` SET '.$setstr;
+		$this->queries='UPDATE `'.$this->prefix.$table.'` SET '.$setstr;
 		if(!empty($where))
 			$this->queries.=(' WHERE '.$where);
 		return $this->get_result();
@@ -515,7 +516,7 @@ class db{
 		if(empty($where))
 			return false;
 		$this->_real_where_by_ref($where);
-		$this->queries='DELETE FROM `'.$table.'` WHERE '.$where;
+		$this->queries='DELETE FROM `'.$this->prefix.$table.'` WHERE '.$where;
 		return $this->get_result();
 	}
 	/**
@@ -529,10 +530,10 @@ class db{
 	 **/
 	public function get_reindex_string($table,$index,$cols){
 		if(!is_array($cols))
-			$this->queries='SELECT '.$cols.','.$index.' FROM '.$table;
+			$this->queries='SELECT '.$cols.','.$index.' FROM '.$this->prefix.$table;
 		else{
 			$colss=implode(',',$cols);
-			$this->queries='SELECT '.$colss.','.$index.' FROM '.$table;
+			$this->queries='SELECT '.$colss.','.$index.' FROM '.$this->prefix.$table;
 		}
 		$rows=$this->get_rows();
 		if($rows==null)
@@ -966,7 +967,7 @@ class db{
 	 **/	
 	//返回某杆塔绑定的所有线路数组
 	public function get_lines_on_group($group_id){
-		$this->queries="SELECT groups.group_id,liness.line_id,liness.line_name FROM groups,liness WHERE groups.group_id=".$group_id." AND (groups.line_id=liness.line_id OR groups.line_id2=liness.line_id)";
+		$this->queries='SELECT '.$this->prefix.'groups.group_id,'.$this->prefix.'liness.line_id,'.$this->prefix.'liness.line_name FROM '.$this->prefix.'groups,'.$this->prefix.'liness WHERE '.$this->prefix.'groups.group_id=".$group_id." AND ('.$this->prefix.'groups.line_id='.$this->prefix.'liness.line_id OR '.$this->prefix.'groups.line_id2='.$this->prefix.'liness.line_id)';
 		return $this->get_rows();
 	}
 	// public function add_group_vi_line_name($group_name,$group_loc,$line_name=null,$line_name2=null,$coor_long,$coor_lat){
@@ -985,7 +986,7 @@ class db{
 	 * @return null/array null-无绑定杆塔的线路,array-三维数组
 	 **/
 	public function get_all_groups_coor_index_line_id(){
-		$this->queries="SELECT groups.group_id,groups.coor_long,groups.coor_lat,liness.line_id FROM groups,liness WHERE groups.line_id=liness.line_id OR groups.line_id2=liness.line_id ORDER BY groups.coor_long,groups.coor_lat";
+		$this->queries='SELECT '.$this->prefix.'groups.group_id,'.$this->prefix.'groups.coor_long,'.$this->prefix.'groups.coor_lat,'.$this->prefix.'liness.line_id FROM '.$this->prefix.'groups,'.$this->prefix.'liness WHERE '.$this->prefix.'groups.line_id='.$this->prefix.'liness.line_id OR '.$this->prefix.'groups.line_id2='.$this->prefix.'liness.line_id ORDER BY '.$this->prefix.'groups.coor_long,'.$this->prefix.'groups.coor_lat';
 		$rows=$this->get_table('groups');
 		$rerows=null;
 		if($rows)
@@ -1003,7 +1004,7 @@ class db{
 	 * @return bool true-指定线路上存在此杆塔,false-不存在
 	 **/
 	public function is_group_on_line($group_id,$line_id){
-		$this->queries="SELECT group_id FROM groups WHERE group_id=".$group_id." AND (line_id=".$line_id." OR line_id2=".$line_id.")";
+		$this->queries='SELECT group_id FROM '.$this->prefix.'groups WHERE group_id='.$group_id.' AND (line_id='.$line_id.' OR line_id2='.$line_id.')';
 		//$this->queries="SELECT * FROM groups";
 		$result=$this->get_result();
 		if($this->get_table('groups',null,'group_id',array('group_id'=>$group_id,'AND (','line_id'=>$line_id,'OR','line_id2'=>$line_id,')')))
@@ -1347,7 +1348,7 @@ class db{
 		if ($this->get_user_id($user_name)>0)
 			$err[$i++]=("用户名已存在");
 		if($i==0){
-			$colvs=array('user_name'=>"'$user_name'",'passwd'=>"'$passwdd'",'user_role'=>$user_role,'user_gid'=>$user_gid,'user_phone'=>"'$user_phone'",'user_email'=>"'$user_email'",'is_send'=>$is_send,'last_login_time'=>'NOW()','register_time'=>'NOW()');
+			$colvs=array('user_name'=>"'$user_name'",'passwd'=>"'$passwdd'",'user_role'=>$user_role,'user_gid'=>$user_gid,'user_phone'=>"'$user_phone'",'user_email'=>"'$user_email'",'is_send'=>$is_send,'current_login_time'=>'NOW()','register_time'=>'NOW()');
 			if(!$this->insert_table('users',$colvs))
 				$err[$i++]='添加用户失败，请联系管理员';
 			else{
@@ -1530,7 +1531,7 @@ class db{
 	 * @return null/array null-无报警信息;array-二维数组
 	 **/
 	public function get_last_alarms(){
-		$this->queries="SELECT * FROM alarms ORDER BY action_time DESC LIMIT 0,20";
+		$this->queries='SELECT * FROM '.$this->prefix.'alarms ORDER BY action_time DESC LIMIT 0,20';
 		$rows=$this->get_rows();
 		$devs=$this->get_table('devs','dev_id','*');
 		$groups=$this->get_table('groups','group_id','*');
@@ -1654,7 +1655,78 @@ class db{
 			return $sites;
 		return null;
 	}
+	/**
+	 * create_site_table
+	 * 创建新站点表
+	 * @param string 站点名
+	 * @return bool true-新建成功;false-新建失败
+	 **/
+	private function create_site_table($site_name){
+		$t=0;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_alarms` (`id` int(10) unsigned NOT NULL AUTO_INCREMENT,`action_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`action_num` tinyint(3) unsigned NOT NULL,`i_num` smallint(5) unsigned NOT NULL,`tem` tinyint(4) NOT NULL,`hum` tinyint(4) NOT NULL,`dev_id` int(10) unsigned NOT NULL,`is_read` tinyint(1) NOT NULL DEFAULT \'0\',PRIMARY KEY (`id`),KEY `action_time` (`action_time`),KEY `FK_DEV_ID` (`dev_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_devs` (`dev_id` int(10) unsigned NOT NULL AUTO_INCREMENT,`dev_number` char(11) NOT NULL,`dev_name` char(30) DEFAULT \'在线监测仪\',`dev_phase` char(4) NOT NULL,`group_id` int(10) unsigned NOT NULL,`line_id` int(10) unsigned NOT NULL,PRIMARY KEY (`dev_id`),UNIQUE KEY `dev_number` (`dev_number`),KEY `dev_id` (`dev_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_dologs` (`ID` int(11) unsigned NOT NULL AUTO_INCREMENT,`do_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`do_msg` varchar(50) NOT NULL,`do_ip` char(40) DEFAULT NULL,PRIMARY KEY (`ID`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_groups` (`group_id` int(10) unsigned NOT NULL AUTO_INCREMENT,`group_name` char(30) NOT NULL,`group_loc` char(30) NOT NULL,`line_id` int(10) unsigned DEFAULT \'0\',`line_id2` int(10) unsigned DEFAULT \'0\',`coor_long` double NOT NULL,`coor_lat` double NOT NULL,`user_gid` int(11) NOT NULL DEFAULT \'0\',PRIMARY KEY (`group_id`),KEY `S_GROUP_NAME` (`group_name`)) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_histories` (`id` int(10) unsigned NOT NULL AUTO_INCREMENT,`action_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`action_num` tinyint(3) unsigned NOT NULL,`i_num` smallint(5) unsigned NOT NULL,`tem` tinyint(4) NOT NULL,`hum` tinyint(4) NOT NULL,`dev_id` int(10) unsigned NOT NULL,`is_read` tinyint(1) NOT NULL DEFAULT \'0\',PRIMARY KEY (`id`),KEY `action_time` (`action_time`),KEY `FK_DEV_ID` (`dev_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_liness` (`line_id` int(10) unsigned NOT NULL AUTO_INCREMENT,`line_name` varchar(50) NOT NULL,`add_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY (`line_id`),UNIQUE KEY `line_name` (`line_name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_usergroups` (`user_gid` int(11) NOT NULL AUTO_INCREMENT,`user_gname` char(24) NOT NULL,PRIMARY KEY (`user_gid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='CREATE TABLE IF NOT EXISTS `'.$site_name.'_users` (`user_id` int(11) NOT NULL AUTO_INCREMENT,`user_name` char(18) NOT NULL,`passwd` char(32) NOT NULL,`user_role` tinyint(3) unsigned NOT NULL DEFAULT \'5\',`current_login_time` timestamp NULL DEFAULT NULL,`last_login_time` timestamp NULL DEFAULT NULL,`register_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`user_gid` int(11) NOT NULL DEFAULT \'0\',`user_phone` char(15) DEFAULT \'0\',`user_email` varchar(32) DEFAULT NULL,`is_send` tinyint(4) DEFAULT \'0\',PRIMARY KEY (`user_id`),UNIQUE KEY `user_name` (`user_name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC';
+		if(!$this->get_result())
+			$t++;
+		$passwdd=md5('111111');
+		$this->queries='INSERT INTO '.$site_name.'_users(user_name,passwd,user_role,user_gid,user_phone,user_email,is_send,current_login_time,register_time) VALUES(\'admin\',\''.$passwdd.'\',1,0,0,\'\',0,NOW(),NOW())';
+		$this->get_result();
+		return ($t==0)?true:false;
 
+	}
+	/**
+	 * delete_site_table
+	 * 删除站点表
+	 * @param string 站点名
+	 * @return bool true-删除成功;false-删除失败
+	 **/
+	private function delete_site_table($site_name){
+		$t=0;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_alarms';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_devs';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_dologs';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_groups';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_histories';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_liness';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_usergroups';
+		if(!$this->get_result())
+			$t++;
+		$this->queries='DROP TABLE IF EXISTS '.$site_name.'_users';
+		if(!$this->get_result())
+			$t++;
+		return ($t==0)?true:false;
+	}
 	/**
 	 * add_site
 	 * 添加站点
@@ -1681,10 +1753,15 @@ class db{
 			$err[$i++]='站点名格式有误,只能输入小写英文字母';
 		elseif(!set_site_conf_file($site_name,$dbhost,$dbname,$dbuser,$dbpasswd))
 			$err[$i++]='建立配置文件失败,请确认conf文件夹可写';
+		elseif(!$this->create_site_table($site_name)){
+			$err[$i++]='建立数据库失败,请确认数据库可以访问';
+			delete_site_conf_file($site_name);
+		}
 		if($i==0){
 			if(!$this->insert_table('multisites',array('site_name'=>"'$site_name'",'site_remark'=>"'$site_remark'"))){
 				$err[$i++]='新建站点失败,请稍后再试';
 				delete_site_conf_file($site_name);
+				$this->delete_site_table($site_name);
 			}
 			else{
 				global $__USER;
@@ -1748,6 +1825,8 @@ class db{
 			$err[$i++]='站点不存在或已删除';
 		elseif(!delete_site_conf_file($site['site_name']))
 			$err[$i++]='删除配置文件失败,请检查conf文件夹全写是否可写';
+		elseif(!$this->delete_site_table($site['site_name']))
+			$err[$i++]='删除数据表失败,请确认数据库可以访问,或表';
 		if($i==0){
 			if(!$this->delete_table('multisites',array('site_id'=>$site_id)))
 				$err[$i++]='删除失败,请稍后再试';

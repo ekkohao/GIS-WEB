@@ -1,3 +1,4 @@
+<p><small>新站点默认系统管理员账号:admin,密码111111</small></p>
 <div class="btn-group">
 	<a href="index.php?page=multisites&action=newsite" class="btn btn-success btn-toaddsite">新增站点</a>
 </div>
@@ -18,7 +19,7 @@ if($sites&&count($sites)>0){
 			$html='';
 			$html.= '<tr><td><input id="cb-select-'.$site['site_id'].'" type="hidden" value="'.$site['site_id'].'"><br />&nbsp;</td>';
 			$html.='<td><strong><a href="http://'.$site['site_name'].'.kedinggis.com">'.$site['site_name'].'.kedinggis.com</a></strong>';
-			$html.='<div class="row-actions"><span class="edit"><a href="index.php?page=multisites&action=editsite" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td>';
+			$html.='<div class="row-actions"><span class="edit"><a href="index.php?page=multisites&action=editsite&sid='.$site['site_id'].'" title="编辑此项目">编辑</a></span><span class="delete"><a href="javascript:void(0)" title="删除此项目">删除</a></span></div></td>';
 			$html.='<td>'.$site['site_remark'].'</td></tr>';
 			echo $html;
 			}

@@ -12,7 +12,7 @@ $(document).ready(function(){
 	$('.btn-group .btn-topopaddug').click(function(){
 		mode=0;
 		$('.form-addug h3').html("添加新小组");
-		$('.form-addg button.btn').html("确定添加");
+		$('.form-addug button.btn').html("确定添加");
 		$('.pop-box.pop-addug').fadeIn(200);
 		$('#inputUserGName').val('');
 		$('#inputUserGName')[0].focus();
