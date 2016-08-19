@@ -91,7 +91,7 @@ function listeningEvent(){
         		nowId=t.data.alarm.id;
         		point=new BMap.Point(t.data.group.coor_long,t.data.group.coor_lat);
         		title='设备'+t.data.dev.dev_number+'报警';
-        		content='报警时间：'+t.data.alarm.action_time+'，动作次数：'+t.data.alarm.action_num+'，电流：'+t.data.alarm.i_num+'uA，温度：'+t.data.alarm.tem+'℃，湿度：'+t.data.alarm.hum+'%<br />杆塔：'+t.data.dev.group_loc_name+'，线路：'+t.data.dev.line_name+'，相位：'+t.data.dev.dev_phase;
+        		content='报警时间：'+t.data.alarm.action_time+'，动作次数：'+t.data.alarm.action_num+'，电流：'+t.data.alarm.i_num+'uA，温度：'+t.data.alarm.tem+'℃，湿度：'+t.data.alarm.hum+'%<br />杆塔：'+t.data.dev.group_loc+'-'+t.data.dev.group_loc+'，线路：'+t.data.dev.line_name+'，相位：'+t.data.dev.dev_phase;
         		alarmRing(point,title,content);
         		if($('.widget-alarmslist').hasClass('tohide'))
         			$('.widget-alarmslist').removeClass('tohide');

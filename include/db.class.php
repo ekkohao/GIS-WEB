@@ -636,6 +636,7 @@ class db{
 		if($devs[0]['group_id']==0){
 			$groups[0]['group_loc']='未绑定';
 			$groups[0]['group_name']='&nbsp;';
+			$groups[0]['user_gid']='默认';
 		}
 		else
 			$groups=$this->get_table('groups',null,'*',array('group_id'=>$devs[0]['group_id']));
@@ -646,6 +647,7 @@ class db{
 		$devs[0]['group_loc']=isset($groups[0]['group_loc'])?$groups[0]['group_loc']:'杆塔已删除';
 		$devs[0]['group_name']=isset($groups[0]['group_name'])?$groups[0]['group_name']:'&nbsp;';
 		$devs[0]['line_name']=isset($lines[0]['line_name'])?$lines[0]['line_name']:'线路已删除';
+		$devs[0]['user_gid']=isset($groups[0]['user_gid'])?$groups[0]['user_gid']:'无';
 		unset($groups);
 		unset($lines);
 		return $devs[0];
@@ -967,7 +969,8 @@ class db{
 	 **/	
 	//返回某杆塔绑定的所有线路数组
 	public function get_lines_on_group($group_id){
-		$this->queries='SELECT '.$this->prefix.'groups.group_id,'.$this->prefix.'liness.line_id,'.$this->prefix.'liness.line_name FROM '.$this->prefix.'groups,'.$this->prefix.'liness WHERE '.$this->prefix.'groups.group_id=".$group_id." AND ('.$this->prefix.'groups.line_id='.$this->prefix.'liness.line_id OR '.$this->prefix.'groups.line_id2='.$this->prefix.'liness.line_id)';
+		$this->queries='SELECT '.$this->prefix.'groups.group_id,'.$this->prefix.'liness.line_id,'.$this->prefix.'liness.line_name FROM '.$this->prefix.'groups,'.$this->prefix.'liness WHERE '.$this->prefix.'groups.group_id='.$group_id.' AND ('.$this->prefix.'groups.line_id='.$this->prefix.'liness.line_id OR '.$this->prefix.'groups.line_id2='.$this->prefix.'liness.line_id)';
+		
 		return $this->get_rows();
 	}
 	// public function add_group_vi_line_name($group_name,$group_loc,$line_name=null,$line_name2=null,$coor_long,$coor_lat){

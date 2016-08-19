@@ -10,7 +10,7 @@ if($_POST['mode']==0){//添加
 	$isadd=$mydb->add_line($_POST['line_name']);
 	$errorsinfo=$mydb->__get('last_errors');
 	if($isadd)
-		$data['line_id']=$mydb->get_line_vi_name($_POST['line_name'])['line_id'];
+		$data['line_id']=$mydb->get_line_id($_POST['line_name']);
 }
 elseif($_POST['mode']==1){//修改
 	$mydb->update_line($_POST['line_id'],$_POST['line_name']);
